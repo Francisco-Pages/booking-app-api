@@ -1,0 +1,15 @@
+#Git
+.git
+.gitignore
+
+#Docker
+.docker
+
+#Python
+booking_app/__pycache__/
+booking_app/*/__pycache__/
+booking_app/*/*/__pycache__/
+booking_app/*/*/*/__pycache__/
+.env/
+.venv/
+venv/
