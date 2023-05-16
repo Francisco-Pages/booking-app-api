@@ -4,6 +4,8 @@ Tests for models
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 
+from core import models
+
 
 class ModelTest(TestCase):
     """Test models."""
@@ -47,3 +49,19 @@ class ModelTest(TestCase):
         
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
+        
+    def test_create_rental_unit(self):
+        """test creating a listing is successful"""
+        user = get_user_model().objects.create_user(
+            'test@example.com',
+            'test123'
+        )
+        rental_unit = models.RentalUnit.objects.create(
+            title='test unit name',
+            price=129,
+            description='new home for rent - testing',
+            unit_type='apartment',
+            status='inactive'
+        )
+        
+        self.assertEqual(str(rental_unit), rental_unit.title)

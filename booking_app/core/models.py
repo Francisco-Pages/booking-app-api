@@ -1,6 +1,7 @@
 """
 Database models
 """
+from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import (
     AbstractBaseUser,
@@ -42,3 +43,29 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
     
     USERNAME_FIELD = 'email'
+    
+UNIT_CHOICES = (
+    ('Hotel', 'hotel'),
+    ('Apartment', 'apartment'),
+    ('House', 'house'),
+    ('Room', 'room'),
+    ('Trailer', 'trailer'),
+    ('Igloo', 'igloo')
+)
+STATUS_CHOICES = (
+    ('Active', 'active'),
+    ('Inactive', 'inactive')
+)
+    
+class RentalUnit(models.Model):
+    """Rental unit objects."""
+    title = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=6, decimal_places=2)
+    description = models.TextField(blank=True)
+    unit_type = models.CharField(max_length=30, choices=UNIT_CHOICES, default='hotel')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='inactive')
+    
+    def __str__(self):
+        return self.title
+    
+    
