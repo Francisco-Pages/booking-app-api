@@ -57,11 +57,16 @@ class ModelTest(TestCase):
             'test123'
         )
         rental_unit = models.RentalUnit.objects.create(
+            user=user,
             title='test unit name',
             price=129,
             description='new home for rent - testing',
             unit_type='apartment',
-            status='inactive'
+            status='inactive',
+            max_guests=6,
+            wifi_name='don pedro',
+            wifi_password='Kolocolo',
+            house_rules='please make your bed before check out, thank you',
         )
         
         self.assertEqual(str(rental_unit), rental_unit.title)
