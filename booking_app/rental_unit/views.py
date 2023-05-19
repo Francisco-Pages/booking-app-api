@@ -2,8 +2,9 @@
 views for the rental unit api
 """
 from rest_framework import viewsets
+from rest_framework import serializers as drf_serializers
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 from core.models import RentalUnit
 from rental_unit import serializers
@@ -27,6 +28,31 @@ class RentalUnitViewSet(viewsets.ModelViewSet):
         return self.serializer_class
     
     def perform_create(self, serializer):
-        """create a new recipe"""
-        serializer.save(user=self.request.user)
+        """create a new rental unit"""
+        user = self.request.user
+        
+        if user.is_staff == False:
+            raise drf_serializers.ValidationError('Not authorized to create listings')
+        else:
+            serializer.save(user=user)
+            
+    def perform_update(self, serializer):
+        user = self.request.user
+        
+        if user.is_staff == False:
+            raise drf_serializers.ValidationError('Not authorized to create listings')
+        else:
+            serializer.save(user=user)
+    
+    def perform_destroy(self, instance):
+        user = self.request.user
+        
+        if user.is_staff == False:
+            raise drf_serializers.ValidationError('Not authorized to create listings')
+        else:
+            instance.delete()
+        
+        
+        
+
         
