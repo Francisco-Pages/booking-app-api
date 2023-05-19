@@ -63,8 +63,8 @@ class RentalUnit(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
-    title = models.CharField(max_length=255)
-    price = models.DecimalField(max_digits=6, decimal_places=2)
+    title = models.CharField(max_length=255, default='Enter Title')
+    price = models.DecimalField(max_digits=6, decimal_places=2, default=100)
     description = models.TextField(blank=True)
     unit_type = models.CharField(max_length=30, choices=UNIT_CHOICES, default='hotel')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='inactive')
