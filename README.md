@@ -11,10 +11,10 @@ database design
     status
     photos (foreignfield, table)
     property type
-    amenities (each is a boolean field, description field next to some values) 
+    amenities (each is a boolean field, description field next to some values) and amentities description table
         
         popular 
-        
+
         essentials
         airconditioning
         cleaning products
@@ -64,7 +64,8 @@ database design
         exercise equipment
         games console
         life size games
-        piano ping pong table
+        piano 
+        ping pong table
         record player
         sound system
 
@@ -123,7 +124,7 @@ database design
         laundromat nearby
         private entrance
         resort access
-        ski-in/ski/out
+        ski access
         waterfront
 
         outdoor
@@ -163,6 +164,7 @@ database design
         cleaning available during stay
         long term stays allowed
         luggage dropoff allowed
+
     location
         neighborhood description
         getting around
@@ -176,16 +178,21 @@ database design
         room name
         bed type
         couch type
-        tv type
-        bathroom type
-        shower type
-    accessibility 
+        tv (yes or no)
+        bathroom type (half or full)
+        shower type (tub, regadera, jaccuzzi, outdoor)
+
+    accessibility - add accessibility descriptions table
         entrance
         entrance description
         parking
         parking description
         adaptive equipment
         adaptive equipment description
+        door width
+        door width description
+        stairs 
+
     guest safety
         carbon monoxide alarm
         fire extinguisher
@@ -205,6 +212,7 @@ database design
         no parking on property
         some spaces are shared
         weapons on property
+
     pricing
         night price
         smart pricing
@@ -213,22 +221,25 @@ database design
         listing currency
         weekly discount
         monthly discount
-        additional charges (foreignfield, table: name, price, is_active)
+        additional charges (foreignkey) add table for prices
             ...
             pet fee
             extra guest
             transport
             ...
         taxes
+        taxes description
+
     calendar availability
         min stay
         max stay
         advance notice
         prep time
-        availability window
-        restricted checkin days
-        restricted checkout days
-        blocked dates
+        availability window (how many days in advance)
+        restricted check in days
+        restricted check out days
+        blocked dates (foreignkey table, rental unit id, datetime start, datetime end)
+
     policies and rules
         cancellation policy
         instant book
@@ -244,6 +255,7 @@ database design
         guest requirements
         laws and regulations
         primary use of listing
+
     info for guests
         pre-booking details 
             check in window
@@ -253,13 +265,16 @@ database design
                 type
                 description
                 address
+                image
             interaction preferences
+            check-in method
         post-booking preferences
             house manual
                 question (ex: wifi name)
                 answer (ex: wifi password)
-            checkin method
+            checkin method instructions
             wifi details
+
 reservations
     guest
     rental unit reserved
