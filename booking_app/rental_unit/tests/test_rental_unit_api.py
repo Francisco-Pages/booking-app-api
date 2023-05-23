@@ -30,14 +30,10 @@ def create_rental_unit(user, **params):
     """create and return a rental unit object"""
     defaults = {
         'title':'Title of property',
-        'price':100,
         'description':'A unique description of your home',
         'unit_type':'apartment',
         'status':'inactive',
         'max_guests':1,
-        'wifi_name':'wifi name',
-        'wifi_password':'wifi password ',
-        'house_rules':'please make your bed before check out, thank you',
     }
     defaults.update(params)
     
@@ -117,7 +113,6 @@ class PrivateRentalUnitApiTests(TestCase):
         """test error creating a rental unit by a non administrator"""
         payload = {
             'title':'Title of property',
-            'price':100,
         }
         result = self.client.post(RENTAL_UNIT_URL, payload)
         
@@ -148,20 +143,18 @@ class PrivateRentalUnitApiTests(TestCase):
         rental_unit = create_rental_unit(
             user=self.user,
             title=original_title,
-            price=Decimal('100'),
             description='sample unit description',
         )
         
         payload = {
             'title': 'NEW Title of property',
-            'price': Decimal('100.29'),
             'description': 'NEW A unique description of your home',
-            'unit_type': 'Hotel',
+            'link': 'https://example.com/new-rental-unit.pdf',
+            'languages': 'vi',
             'status': 'Active',
+            'images': 'NEW images',
+            'unit_type': 'Hotel',
             'max_guests': 1,
-            'wifi_name': 'NEW wifi name',
-            'wifi_password': 'NEW wifi password',
-            'house_rules': 'NEW please make your bed before check out, thank you',
         }
         url = detail_url(rental_unit.id)
         result = self.client.put(url, payload)
@@ -225,7 +218,6 @@ class AdminRentalUnitApiTests(TestCase):
         """test creating a rental unit by administrator"""
         payload = {
             'title':'Title of property',
-            'price':100,
         }
         result = self.client.post(RENTAL_UNIT_URL, payload)
         
@@ -238,7 +230,7 @@ class AdminRentalUnitApiTests(TestCase):
         
     def test_partial_update(self):
         """test patch of a rental unit"""
-        original_link = 'https://example.com/renta-unit.pdf'
+        original_link = 'https://example.com/rental-unit.pdf'
         rental_unit = create_rental_unit(
             user=self.user,
             title='sample unit title',
@@ -260,20 +252,18 @@ class AdminRentalUnitApiTests(TestCase):
         rental_unit = create_rental_unit(
             user=self.user,
             title='sample unit title',
-            price=Decimal('100'),
             description='sample unit description',
         )
         
         payload = {
             'title': 'NEW Title of property',
-            'price': Decimal('100.29'),
             'description': 'NEW A unique description of your home',
-            'unit_type': 'Hotel',
+            'link': 'https://example.com/new-rental-unit.pdf',
+            'languages': 'vi',
             'status': 'Active',
+            'images': 'NEW images',
+            'unit_type': 'Hotel',
             'max_guests': 1,
-            'wifi_name': 'NEW wifi name',
-            'wifi_password': 'NEW wifi password',
-            'house_rules': 'NEW please make your bed before check out, thank you',
         }
         url = detail_url(rental_unit.id)
         result = self.client.put(url, payload)

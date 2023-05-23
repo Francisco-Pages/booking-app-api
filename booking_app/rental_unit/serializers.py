@@ -14,13 +14,13 @@ class RentalUnitSerializer(serializers.ModelSerializer):
         fields = [
             'id', 
             'title', 
-            'price', 
-            'unit_type', 
+            'description', 
+            'link', 
+            'languages',
             'status', 
+            'images', 
+            'unit_type', 
             'max_guests', 
-            'wifi_name', 
-            'wifi_password', 
-            'house_rules'
         ]
         read_only_fields = ['id']
         
@@ -28,4 +28,4 @@ class RentalUnitDetailSerializer(RentalUnitSerializer):
     """Serializer for rental unit detail view"""
     
     class Meta(RentalUnitSerializer.Meta):
-        fields = RentalUnitSerializer.Meta.fields + ['description']
+        fields = RentalUnitSerializer.Meta.fields 

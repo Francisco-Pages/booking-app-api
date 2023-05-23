@@ -9,8 +9,10 @@ database design
     custom link
     languages
     status
-    photos (foreignfield, table)
+    images (foreignfield, table)
     property type
+    max_guests
+
     amenities (each is a boolean field, description field next to some values) and amentities description table
         
         popular 

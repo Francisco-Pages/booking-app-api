@@ -70,8 +70,9 @@ class RentalUnit(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='inactive')
     images = models.CharField(max_length=255, blank=True)
     unit_type = models.CharField(max_length=30, choices=UNIT_CHOICES, default='hotel')
-    amenities = models.ForeignKey("Amenities", blank=True, null=True, on_delete=models.PROTECT)
-    # location = models.ForeignKey()
+    max_guests = models.IntegerField(default=1)
+    # amenities = models.ForeignKey("AmenitiesList", blank=True, null=True, on_delete=models.PROTECT)
+    # location = models.ForeignKey("DetailedLocation", blank=True, null=True, on_delete=models.PROTECT)
     # rooms_and_spaces = models.ForeignKey()
     # accessibility = models.ForeignKey()
     # guest_safety = models.ForeignKey()
@@ -84,9 +85,9 @@ class RentalUnit(models.Model):
         return self.title
     
     
-class Amenities(models.Model):
-    """amenities available for rental units"""
-    rental_unit = models.OneToOneField(RentalUnit, related_name="rental_unit_id", on_delete=models.PROTECT)
+class AmenitiesList(models.Model):
+    """list of amenities available for rental units"""
+    rental_unit = models.OneToOneField(RentalUnit, blank=True, null=True, on_delete=models.PROTECT)
     popular_essentials = models.BooleanField(default=False)
     popular_airconditioning = models.BooleanField(default=False)
     popular_cleaning_products = models.BooleanField(default=False)
@@ -206,3 +207,17 @@ class Amenities(models.Model):
     
     def __str__(self):
         return f"Amenities for rental unit #{self.rental_unit.id}, owned by {self.rental_unit.user}."
+    
+class DetailedLocation(models.Model):
+    """Location details of a rental unit"""
+    rental_unit = models.OneToOneField(RentalUnit, blank=True, null=True, on_delete=models.PROTECT)
+    neighborhood_description = models.TextField(default="Describe the neighborhood of your place.")
+    getting_around = models.TextField(default="Any tips about how to reach your place or interesting things around.")
+    location_sharing = models.BooleanField(default=False)
+    address1 = models.CharField(verbose_name="Address line 1", max_length=1024, blank=True)
+    address2 = models.CharField(verbose_name="Address line 2",max_length=1024, blank=True)
+    zip_code = models.CharField(verbose_name="ZIP / Postal code",max_length=12, blank=True)
+    city = models.CharField(verbose_name="City",max_length=1024, blank=True)
+    country = models.CharField(verbose_name="Country",max_length=3, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, default=0)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, default=0)
