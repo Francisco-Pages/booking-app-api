@@ -71,8 +71,8 @@ class RentalUnit(models.Model):
     images = models.CharField(max_length=255, blank=True)
     unit_type = models.CharField(max_length=30, choices=UNIT_CHOICES, default='hotel')
     max_guests = models.IntegerField(default=1)
-    # amenities = models.ForeignKey("AmenitiesList", blank=True, null=True, on_delete=models.PROTECT)
-    # location = models.ForeignKey("DetailedLocation", blank=True, null=True, on_delete=models.PROTECT)
+    amenities = models.ForeignKey("AmenitiesList", blank=True, null=True, on_delete=models.PROTECT)
+    location = models.ForeignKey("DetailedLocation", blank=True, null=True, on_delete=models.PROTECT)
     # rooms_and_spaces = models.ForeignKey()
     # accessibility = models.ForeignKey()
     # guest_safety = models.ForeignKey()
@@ -87,7 +87,7 @@ class RentalUnit(models.Model):
     
 class AmenitiesList(models.Model):
     """list of amenities available for rental units"""
-    rental_unit = models.OneToOneField(RentalUnit, blank=True, null=True, on_delete=models.PROTECT)
+    # rental_unit = models.OneToOneField(RentalUnit, blank=True, null=True, on_delete=models.PROTECT)
     popular_essentials = models.BooleanField(default=False)
     popular_airconditioning = models.BooleanField(default=False)
     popular_cleaning_products = models.BooleanField(default=False)
@@ -210,7 +210,7 @@ class AmenitiesList(models.Model):
     
 class DetailedLocation(models.Model):
     """Location details of a rental unit"""
-    rental_unit = models.OneToOneField(RentalUnit, blank=True, null=True, on_delete=models.PROTECT)
+    # rental_unit = models.OneToOneField(RentalUnit, blank=True, null=True, on_delete=models.PROTECT)
     neighborhood_description = models.TextField(default="Describe the neighborhood of your place.")
     getting_around = models.TextField(default="Any tips about how to reach your place or interesting things around.")
     location_sharing = models.BooleanField(default=False)

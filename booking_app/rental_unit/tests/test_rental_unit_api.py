@@ -49,7 +49,7 @@ def create_superuser(**params):
     """create and return a new user"""
     return get_user_model().objects.create_superuser(**params)
 
-##TEST HANDLERS
+### TEST HANDLERS ###
 class PublicRentalUnitApiTests(TestCase):
     """tests for unauthenticated API requests."""
     
