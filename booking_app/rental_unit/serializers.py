@@ -3,7 +3,7 @@ serializers for rental unit API
 """
 from rest_framework import serializers
 
-from core.models import RentalUnit, AmenitiesList
+from core.models import RentalUnit, Amenities
 
 
 class RentalUnitSerializer(serializers.ModelSerializer):
@@ -32,16 +32,16 @@ class RentalUnitDetailSerializer(RentalUnitSerializer):
     class Meta(RentalUnitSerializer.Meta):
         fields = RentalUnitSerializer.Meta.fields 
         
-class AmenitiesListSerializer(serializers.ModelSerializer):
+class AmenitiesSerializer(serializers.ModelSerializer):
     """serializer for an amenities list"""
     
     class Meta:
-        model = AmenitiesList
+        model = Amenities
         fields = '__all__'
         read_only_fields = ['id']
         
-class AmenitiesListDetailSerializer(AmenitiesListSerializer):
+class AmenitiesDetailSerializer(AmenitiesSerializer):
     """Serializer for amenities list detail view"""
     
-    class Meta(AmenitiesListSerializer.Meta):
-        fields = AmenitiesListSerializer.Meta.fields 
+    class Meta(AmenitiesSerializer.Meta):
+        fields = AmenitiesSerializer.Meta.fields 

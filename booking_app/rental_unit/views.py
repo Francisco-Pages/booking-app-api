@@ -6,7 +6,7 @@ from rest_framework import serializers as drf_serializers
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
-from core.models import RentalUnit, AmenitiesList
+from core.models import RentalUnit, Amenities
 from rental_unit import serializers
 
 
@@ -52,10 +52,10 @@ class RentalUnitViewSet(viewsets.ModelViewSet):
         else:
             instance.delete()
             
-class AmenitiesListViewSet(viewsets.ModelViewSet):
+class AmenitiesViewSet(viewsets.ModelViewSet):
     """view for manage the amenities list for the rental unit APIs"""
-    serializer_class = serializers.AmenitiesListDetailSerializer
-    queryset = AmenitiesList.objects.all()
+    serializer_class = serializers.AmenitiesDetailSerializer
+    queryset = Amenities.objects.all()
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     
@@ -66,7 +66,7 @@ class AmenitiesListViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         """returns serializer class for request"""
         if self.action == 'list':
-            return serializers.AmenitiesListSerializer
+            return serializers.AmenitiesSerializer
         return self.serializer_class
     
     def perform_create(self, serializer):

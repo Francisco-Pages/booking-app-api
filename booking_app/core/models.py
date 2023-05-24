@@ -71,7 +71,7 @@ class RentalUnit(models.Model):
     images = models.CharField(max_length=255, blank=True)
     unit_type = models.CharField(max_length=30, choices=UNIT_CHOICES, default='hotel')
     max_guests = models.IntegerField(default=1)
-    amenities = models.ForeignKey("AmenitiesList", blank=True, null=True, on_delete=models.PROTECT)
+    amenities = models.ForeignKey("Amenities", blank=True, null=True, on_delete=models.PROTECT)
     location = models.ForeignKey("DetailedLocation", blank=True, null=True, on_delete=models.PROTECT)
     # rooms_and_spaces = models.ForeignKey()
     # accessibility = models.ForeignKey()
@@ -85,7 +85,7 @@ class RentalUnit(models.Model):
         return self.title
     
     
-class AmenitiesList(models.Model):
+class Amenities(models.Model):
     """list of amenities available for rental units"""
     # rental_unit = models.OneToOneField(RentalUnit, blank=True, null=True, on_delete=models.PROTECT)
     popular_essentials = models.BooleanField(default=False)
