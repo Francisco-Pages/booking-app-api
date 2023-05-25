@@ -3,12 +3,12 @@ views for the rental unit api
 """
 from django.contrib.auth import get_user_model
 
-from rest_framework import viewsets
+from rest_framework import viewsets, mixins
 from rest_framework import serializers as drf_serializers
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
-from core.models import RentalUnit
+from core.models import RentalUnit, AmenitiesList
 from rental_unit import serializers
 
 
@@ -61,16 +61,16 @@ class RentalUnitViewSet(viewsets.ModelViewSet):
         else:
             instance.delete()
             
-# class AmenitiesViewSet(viewsets.ModelViewSet):
-#     """view for manage the amenities list for the rental unit APIs"""
-#     serializer_class = serializers.AmenitiesDetailSerializer
-#     queryset = Amenities.objects.all()
-#     authentication_classes = [TokenAuthentication]
-#     permission_classes = [IsAuthenticated]
+class AmenitiesListViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    """view for manage the amenities list for the rental unit APIs"""
+    serializer_class = serializers.AmenitiesListSerializer
+    queryset = AmenitiesList.objects.all()
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
     
-#     def get_queryset(self):
-#         """retrieve amenities list for authenticated users"""
-#         return self.queryset.all().order_by('-id')
+    def get_queryset(self):
+        """retrieve amenities list for authenticated users"""
+        return self.queryset.all().order_by('-rental_unit')
     
 #     def get_serializer_class(self):
 #         """returns serializer class for request"""
