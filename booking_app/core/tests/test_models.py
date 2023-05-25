@@ -7,6 +7,14 @@ from django.contrib.auth import get_user_model
 from core import models
 
 
+def create_user(**params):
+    """create and return a new user"""
+    return get_user_model().objects.create_user(**params)
+
+def create_superuser(**params):
+    """create and return a new user"""
+    return get_user_model().objects.create_superuser(**params)
+
 class ModelTest(TestCase):
     """Test models."""
     
@@ -69,3 +77,11 @@ class ModelTest(TestCase):
         )
         
         self.assertEqual(str(rental_unit), rental_unit.title)
+        
+    def test_create_amenities_list(self):
+        user = create_superuser(email='test@example.com', password='test1234')
+        rental_unit = models.RentalUnit.objects.create(user=user, title="a new home with amenities")
+        
+        amenities_list = models.AmenitiesList.objects.create(rental_unit=rental_unit)
+        
+        self.assertTrue(models.AmenitiesList.objects.filter(rental_unit=amenities_list.rental_unit).exists())

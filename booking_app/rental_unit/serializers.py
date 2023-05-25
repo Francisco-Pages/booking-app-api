@@ -20,8 +20,6 @@ class RentalUnitSerializer(serializers.ModelSerializer):
             'images', 
             'unit_type', 
             'max_guests',
-            'amenities',
-            'location',
         ]
         read_only_fields = ['id']
         

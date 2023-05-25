@@ -8,7 +8,7 @@ from rest_framework import serializers as drf_serializers
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
-from core.models import RentalUnit, Amenities
+from core.models import RentalUnit
 from rental_unit import serializers
 
 
