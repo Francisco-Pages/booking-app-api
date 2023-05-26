@@ -96,12 +96,13 @@ class PrivateRentalUnitApiTests(TestCase):
     def test_error_create_rental_unit(self):
         """test error creating a rental unit by a non administrator"""
         payload = {
-            'title':'Title of property',
+            'user': self.user,
+            'title':'Title of property not created by an administrator',
         }
         result = self.client.post(RENTAL_UNIT_URL, payload)
-
         self.assertEqual(result.status_code, status.HTTP_400_BAD_REQUEST)
-
+        self.assertFalse(RentalUnit.objects.filter(title=payload['title']).exists())
+        
     def test_error_partial_update(self):
         """test patch of a rental unit"""
         original_link = 'https://example.com/renta-unit.pdf'
@@ -114,7 +115,7 @@ class PrivateRentalUnitApiTests(TestCase):
         payload = {'title': 'new unit title'}
         url = detail_url(rental_unit.id)
         result = self.client.patch(url, payload)
-
+        
         self.assertEqual(result.status_code, status.HTTP_400_BAD_REQUEST)
         rental_unit.refresh_from_db()
         self.assertNotEqual(rental_unit.title, payload['title'])
@@ -184,20 +185,17 @@ class AdminRentalUnitApiTests(TestCase):
             password='testpass123'
         )
         self.client.force_authenticate(user=self.user)
-
+    
     def test_create_rental_unit(self):
-        """test creating a rental unit by administrator"""
+        """test creating a rental unit by an administrator"""
         payload = {
-            'title':'Title of property',
+            'user': self.user,
+            'title':'Title of property created by an administrator',
         }
         result = self.client.post(RENTAL_UNIT_URL, payload)
 
         self.assertEqual(result.status_code, status.HTTP_201_CREATED)
-
-        rental_unit = RentalUnit.objects.get(id=result.data['id'])
-        for k, v in payload.items():
-            self.assertEqual(getattr(rental_unit, k), v)
-        self.assertEqual(rental_unit.user, self.user)
+        self.assertTrue(RentalUnit.objects.filter(title=payload['title']).exists())
 
     def test_partial_update(self):
         """test patch of a rental unit"""

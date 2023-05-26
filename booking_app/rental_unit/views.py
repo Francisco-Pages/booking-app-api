@@ -49,7 +49,7 @@ class RentalUnitViewSet(viewsets.ModelViewSet):
         user = self.request.user
         
         if user.is_staff == False:
-            raise drf_serializers.ValidationError('Not authorized to create listings')
+            raise drf_serializers.ValidationError('Not authorized to update listings')
         else:
             serializer.save(user=user)
     
@@ -57,11 +57,16 @@ class RentalUnitViewSet(viewsets.ModelViewSet):
         user = self.request.user
         
         if user.is_staff == False:
-            raise drf_serializers.ValidationError('Not authorized to create listings')
+            raise drf_serializers.ValidationError('Not authorized to delete listings')
         else:
             instance.delete()
-            
-class AmenitiesListViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+
+class AmenitiesListViewSet(
+    mixins.DestroyModelMixin,
+    mixins.UpdateModelMixin, 
+    mixins.ListModelMixin, 
+    viewsets.GenericViewSet
+    ):
     """view for manage the amenities list for the rental unit APIs"""
     serializer_class = serializers.AmenitiesListSerializer
     queryset = AmenitiesList.objects.all()
@@ -71,6 +76,22 @@ class AmenitiesListViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     def get_queryset(self):
         """retrieve amenities list for authenticated users"""
         return self.queryset.all().order_by('-rental_unit')
+    
+    def perform_update(self, serializer):
+        user = self.request.user
+        
+        if user.is_staff == False:
+            raise drf_serializers.ValidationError('Not authorized to update amenities.')
+        else:
+            serializer.save(user=user)
+    
+    def perform_destroy(self, instance):
+        user = self.request.user
+        
+        if user.is_staff == False:
+            raise drf_serializers.ValidationError('Not authorized to delete amenities.')
+        else:
+            instance.delete()
     
 #     def get_serializer_class(self):
 #         """returns serializer class for request"""
