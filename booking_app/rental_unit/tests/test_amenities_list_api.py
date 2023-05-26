@@ -30,8 +30,8 @@ def create_rental_unit(user, **params):
     defaults = {
         'title':'Title of property',
         'description':'A unique description of your home',
-        'unit_type':'apartment',
-        'status':'inactive',
+        'unit_type':'Apartment',
+        'status':'Inactive',
         'max_guests':1,
     }
     defaults.update(params)
@@ -85,22 +85,22 @@ class PrivateAmenitiesListApiTests(TestCase):
         self.assertEqual(result.status_code, status.HTTP_200_OK)
         self.assertEqual(result.data, serializer.data)
         
-    # def test_error_create_amenities_list(self):
-    #     """test error creating a rental unit by a non administrator"""
-    #     user = create_user(
-    #         email='test1@example.com',
-    #         password='testpass123'
-    #         )
-    #     rental_unit = create_rental_unit(user=user)       
+    def test_error_create_amenities_list(self):
+        """test error creating a rental unit by a non administrator"""
+        user = create_user(
+            email='test1@example.com',
+            password='testpass123'
+            )
+        rental_unit = create_rental_unit(user=user)       
         
-    #     payload = {
-    #         'rental_unit': rental_unit.id,
-    #         'popular_essentials':True,
-    #     }
-    #     result = self.client.post(AMENITIES_LIST_URL, payload)
+        payload = {
+            'rental_unit': rental_unit.id,
+            'popular_essentials':True,
+        }
+        result = self.client.post(AMENITIES_LIST_URL, payload)
 
-    #     self.assertEqual(result.status_code, status.HTTP_400_BAD_REQUEST)
-    #     self.assertFalse(AmenitiesList.objects.filter(rental_unit=payload['rental_unit']).exists())
+        self.assertEqual(result.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(AmenitiesList.objects.filter(rental_unit=payload['rental_unit']).exists())
         
     def test_error_update_amenities_list(self):
         """Test error only administrators can update amenities lists"""
@@ -111,10 +111,10 @@ class PrivateAmenitiesListApiTests(TestCase):
         )
         
         payload = {'popular_essentials':True}
-        url = detail_url(amenities_list.id)
+        url = detail_url(amenities_list.rental_unit)
         result = self.client.patch(url, payload)
         
-        self.assertEqual(result.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(result.status_code, status.HTTP_404_NOT_FOUND)
         amenities_list.refresh_from_db()
         self.assertFalse(amenities_list.popular_essentials)
         
@@ -123,10 +123,10 @@ class PrivateAmenitiesListApiTests(TestCase):
         rental_unit = create_rental_unit(user=self.user)    
         amenities_list = AmenitiesList.objects.create(rental_unit=rental_unit)
         
-        url = detail_url(amenities_list.id)
+        url = detail_url(amenities_list.rental_unit)
         result = self.client.delete(url)
         
-        self.assertEqual(result.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(result.status_code, status.HTTP_404_NOT_FOUND)
         amenities = AmenitiesList.objects.filter(rental_unit=rental_unit)
         self.assertTrue(amenities.exists())
     
@@ -141,30 +141,30 @@ class AdminAmenitiesListApiTests(TestCase):
         )
         self.client.force_authenticate(user=self.user)    
         
-    # def test_create_amenities_list(self):
-    #     """test creating a rental unit by an administrator"""
-    #     super_user = create_superuser(
-    #         email='testadmin2@example.com',
-    #         password='testpass123'
-    #         )
-    #     rental_unit = create_rental_unit(user=super_user)    
+    def test_create_amenities_list(self):
+        """test creating a rental unit by an administrator"""
+        super_user = create_superuser(
+            email='testadmin2@example.com',
+            password='testpass123'
+            )
+        rental_unit = create_rental_unit(user=super_user)    
         
-    #     payload = {
-    #         'rental_unit': rental_unit.id,
-    #         'popular_essentials':True,
-    #     }
-    #     url = detail_url(payload['rental_unit'])
-    #     result = self.client.post(url, payload)
+        payload = {
+            'rental_unit': rental_unit.id,
+            'popular_essentials':True,
+        }
+        url = detail_url(payload['rental_unit'])
+        result = self.client.post(url, payload)
         
-    #     self.assertTrue(AmenitiesList.objects.filter(rental_unit=payload['rental_unit']).exists())
-    #     self.assertEqual(result.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(AmenitiesList.objects.filter(rental_unit=payload['rental_unit']).exists())
+        self.assertEqual(result.status_code, status.HTTP_201_CREATED)
     
     def test_update_amenities_list(self):
         rental_unit = create_rental_unit(user=self.user)    
         amenities_list = AmenitiesList.objects.create(rental_unit=rental_unit)
         
         payload = {'popular_essentials':True}
-        url = detail_url(amenities_list.id)
+        url = detail_url(amenities_list.rental_unit)
         result = self.client.patch(url, payload)
         
         self.assertEqual(result.status_code, status.HTTP_200_OK)
@@ -176,7 +176,7 @@ class AdminAmenitiesListApiTests(TestCase):
         rental_unit = create_rental_unit(user=self.user)    
         amenities_list = AmenitiesList.objects.create(rental_unit=rental_unit)
         
-        url = detail_url(amenities_list.id)
+        url = detail_url(amenities_list.rental_unit)
         result = self.client.delete(url)
         
         self.assertEqual(result.status_code, status.HTTP_204_NO_CONTENT)

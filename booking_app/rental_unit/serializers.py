@@ -30,11 +30,18 @@ class RentalUnitDetailSerializer(RentalUnitSerializer):
     class Meta(RentalUnitSerializer.Meta):
         fields = RentalUnitSerializer.Meta.fields 
         
-
+    
 class AmenitiesListSerializer(serializers.ModelSerializer):
     """Serializer for amenities list"""
     
     class Meta:
         model = AmenitiesList
         fields = '__all__'
-        read_only_fields = ['rental_unit']
+        # read_only_fields = ['rental_unit']
+
+
+class AmenitiesListDetailSerializer(AmenitiesListSerializer):
+    """Serializer for amenities list detail view"""
+    
+    class Meta(AmenitiesListSerializer.Meta):
+        fields = AmenitiesListSerializer.Meta.fields 

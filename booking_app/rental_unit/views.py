@@ -41,7 +41,9 @@ class RentalUnitViewSet(viewsets.ModelViewSet):
         user = self.request.user
         
         if user.is_staff == False:
-            raise drf_serializers.ValidationError('Not authorized to create listings')
+            raise drf_serializers.ValidationError(
+                'Not authorized to create listings'
+            )
         else:
             serializer.save(user=user)
             
@@ -49,7 +51,9 @@ class RentalUnitViewSet(viewsets.ModelViewSet):
         user = self.request.user
         
         if user.is_staff == False:
-            raise drf_serializers.ValidationError('Not authorized to update listings')
+            raise drf_serializers.ValidationError(
+                'Not authorized to update listings'
+            )
         else:
             serializer.save(user=user)
     
@@ -57,18 +61,21 @@ class RentalUnitViewSet(viewsets.ModelViewSet):
         user = self.request.user
         
         if user.is_staff == False:
-            raise drf_serializers.ValidationError('Not authorized to delete listings')
+            raise drf_serializers.ValidationError(
+                'Not authorized to delete listings'
+            )
         else:
             instance.delete()
 
 class AmenitiesListViewSet(
+    mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
     mixins.UpdateModelMixin, 
     mixins.ListModelMixin, 
-    viewsets.GenericViewSet
-    ):
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet):
     """view for manage the amenities list for the rental unit APIs"""
-    serializer_class = serializers.AmenitiesListSerializer
+    serializer_class = serializers.AmenitiesListDetailSerializer
     queryset = AmenitiesList.objects.all()
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -76,6 +83,15 @@ class AmenitiesListViewSet(
     def get_queryset(self):
         """retrieve amenities list for authenticated users"""
         return self.queryset.all().order_by('-rental_unit')
+    
+    # def perform_create(self, serializer):
+    #     """create a new amenities list"""
+    #     user = self.request.user
+        
+    #     if user.is_staff == False:
+    #         raise drf_serializers.ValidationError('Not authorized to create amenities')
+    #     else:
+    #         serializer.save(user=user)
     
     def perform_update(self, serializer):
         user = self.request.user

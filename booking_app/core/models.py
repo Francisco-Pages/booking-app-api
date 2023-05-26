@@ -87,7 +87,7 @@ class RentalUnit(models.Model):
     
 class AmenitiesList(models.Model):
     """list of amenities available for rental units"""
-    rental_unit = models.OneToOneField(RentalUnit, on_delete=models.CASCADE)
+    rental_unit = models.OneToOneField(RentalUnit, primary_key=True, on_delete=models.CASCADE)
     popular_essentials = models.BooleanField(default=False)
     popular_airconditioning = models.BooleanField(default=False)
     popular_cleaning_products = models.BooleanField(default=False)
