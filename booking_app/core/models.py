@@ -208,16 +208,19 @@ class AmenitiesList(models.Model):
     def __str__(self):
         return f"Amenities for rental unit #{self.rental_unit.id}."
     
-# class DetailedLocation(models.Model):
-#     """Location details of a rental unit"""
-#     # rental_unit_id = models.OneToOneField(RentalUnit, on_delete=models.CASCADE)
-#     neighborhood_description = models.TextField(default="Describe the neighborhood of your place.")
-#     getting_around = models.TextField(default="Any tips about how to reach your place or interesting things around.")
-#     location_sharing = models.BooleanField(default=False)
-#     address1 = models.CharField(verbose_name="Address line 1", max_length=1024, blank=True)
-#     address2 = models.CharField(verbose_name="Address line 2",max_length=1024, blank=True)
-#     zip_code = models.CharField(verbose_name="ZIP / Postal code",max_length=12, blank=True)
-#     city = models.CharField(verbose_name="City",max_length=1024, blank=True)
-#     country = models.CharField(verbose_name="Country",max_length=3, blank=True)
-#     longitude = models.DecimalField(max_digits=9, decimal_places=6, default=0)
-#     latitude = models.DecimalField(max_digits=9, decimal_places=6, default=0)
+class Location(models.Model):
+    """Location details of a rental unit"""
+    rental_unit = models.OneToOneField(RentalUnit, primary_key=True, on_delete=models.CASCADE)
+    neighborhood_description = models.TextField(default="Describe the neighborhood of your place.")
+    getting_around = models.TextField(default="Any tips about how to reach your place or interesting things around.")
+    location_sharing = models.BooleanField(default=False)
+    address1 = models.CharField(verbose_name="Address line 1", max_length=1024, blank=True)
+    address2 = models.CharField(verbose_name="Address line 2",max_length=1024, blank=True)
+    zip_code = models.CharField(verbose_name="ZIP / Postal code",max_length=12, blank=True)
+    city = models.CharField(verbose_name="City",max_length=1024, blank=True)
+    country = models.CharField(verbose_name="Country",max_length=3, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, default=0)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, default=0)
+    
+    def __str__(self):
+        return f"Location for rental unit #{self.rental_unit.id}."

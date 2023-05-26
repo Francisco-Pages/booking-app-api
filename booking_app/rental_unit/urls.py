@@ -11,6 +11,7 @@ from rental_unit import views
 router = DefaultRouter()
 router.register('rental_units', views.RentalUnitViewSet)
 router.register('amenities_lists', views.AmenitiesListViewSet)
+router.register('locations', views.LocationViewSet)
 
 app_name = 'rental_unit'
 

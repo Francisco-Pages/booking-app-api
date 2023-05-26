@@ -8,7 +8,7 @@ from rest_framework import serializers as drf_serializers
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
-from core.models import RentalUnit, AmenitiesList
+from core.models import RentalUnit, AmenitiesList, Location
 from rental_unit import serializers
 
 
@@ -123,3 +123,15 @@ class AmenitiesListViewSet(
     #         raise drf_serializers.ValidationError('Not authorized to create a list of amenities')
     #     if rental_unit_of_user.rental_unit_id not in RentalUnit.objects.filter:
     #         serializer.save(user=user)
+    
+    
+class LocationViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    """view for manage the location for the rental unit APIs"""
+    serializer_class = serializers.LocationSerializer
+    queryset = Location.objects.all()
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        """retrieve locations for authenticated users"""
+        return self.queryset.all().order_by('-rental_unit')        

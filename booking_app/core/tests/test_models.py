@@ -79,9 +79,19 @@ class ModelTest(TestCase):
         self.assertEqual(str(rental_unit), rental_unit.title)
         
     def test_create_amenities_list(self):
+        """test creating an amenities list for a rental unit is successful"""
         user = create_superuser(email='test@example.com', password='test1234')
         rental_unit = models.RentalUnit.objects.create(user=user, title="a new home with amenities")
         
         amenities_list = models.AmenitiesList.objects.create(rental_unit=rental_unit)
         
         self.assertTrue(models.AmenitiesList.objects.filter(rental_unit=amenities_list.rental_unit).exists())
+        
+    def test_create_location(self):
+        """test creating a location for a rental unit is successful"""
+        user = create_superuser(email='test@example.com', password='test1234')
+        rental_unit = models.RentalUnit.objects.create(user=user, title="a new home with a location")
+        
+        location = models.Location.objects.create(rental_unit=rental_unit)
+        
+        self.assertTrue(models.Location.objects.filter(rental_unit=location.rental_unit).exists())
