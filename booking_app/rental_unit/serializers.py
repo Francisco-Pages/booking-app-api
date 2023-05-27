@@ -46,6 +46,7 @@ class AmenitiesListDetailSerializer(AmenitiesListSerializer):
     class Meta(AmenitiesListSerializer.Meta):
         fields = AmenitiesListSerializer.Meta.fields 
         
+        
 class LocationSerializer(serializers.ModelSerializer):
     """Serializer for Location"""
     

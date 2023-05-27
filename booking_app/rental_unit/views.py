@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import viewsets, mixins
 from rest_framework import serializers as drf_serializers
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework import permissions, response, status
 
 from core.models import RentalUnit, AmenitiesList, Location
 from rental_unit import serializers
@@ -24,7 +24,7 @@ class RentalUnitViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.RentalUnitDetailSerializer
     queryset = RentalUnit.objects.all()
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
         """retrieve rental units for authenticated users"""
@@ -78,7 +78,7 @@ class AmenitiesListViewSet(
     serializer_class = serializers.AmenitiesListDetailSerializer
     queryset = AmenitiesList.objects.all()
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
         """retrieve amenities list for authenticated users"""
@@ -125,13 +125,20 @@ class AmenitiesListViewSet(
     #         serializer.save(user=user)
     
     
-class LocationViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+class LocationViewSet(viewsets.ModelViewSet):
     """view for manage the location for the rental unit APIs"""
-    serializer_class = serializers.LocationSerializer
+    serializer_class = serializers.LocationDetailSerializer
     queryset = Location.objects.all()
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     
     def get_queryset(self):
         """retrieve locations for authenticated users"""
-        return self.queryset.all().order_by('-rental_unit')        
+        return self.queryset.all().order_by('-rental_unit')   
+    
+    def get_serializer_class(self):
+        """returns serializer class for request"""
+        if self.action == 'list':
+            return serializers.LocationSerializer
+        return self.serializer_class
+    

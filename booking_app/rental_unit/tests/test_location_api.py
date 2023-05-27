@@ -13,7 +13,8 @@ from rest_framework.test import APIClient
 from core.models import AmenitiesList, RentalUnit, Location
 
 from rental_unit.serializers import (
-    LocationSerializer
+    LocationSerializer,
+    LocationDetailSerializer
 )
 
 
@@ -57,18 +58,21 @@ class PublicLocationApiTests(TestCase):
     def test_auth_required(self):
         result = self.client.get(LOCATION_URL)
 
-        self.assertEqual(result.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(result.status_code, status.HTTP_200_OK)
         
 class PrivateLocationApiTests(TestCase):
     """test for authenticated API requests."""
 
     def setUp(self):
-        self.user = create_user(email='test@example.com', password='test1234')
         self.client = APIClient()
+        self.user = create_user(
+            email='test@example.com', 
+            password='test1234'
+        )
         self.client.force_authenticate(user=self.user)
         
-    def test_retrieve_amenities(self):
-        """test retrieving a list of Location"""
+    def test_retrieve_locations_list(self):
+        """test retrieving a list of Locations"""
         rental_unit = create_rental_unit(user=self.user)
         rental_unit_two = create_rental_unit(user=self.user)
         
@@ -82,3 +86,49 @@ class PrivateLocationApiTests(TestCase):
         self.assertEqual(result.status_code, status.HTTP_200_OK)
         self.assertEqual(result.data, serializer.data)
         
+    def test_get_location_detail(self):
+        """test get rental unit detail"""
+        rental_unit = create_rental_unit(user=self.user)
+        location = Location.objects.create(rental_unit=rental_unit)
+        
+        url = detail_url(location.rental_unit.id)
+        result = self.client.get(url)
+
+        serializer = LocationDetailSerializer(location)
+        self.assertEqual(result.data, serializer.data)
+        
+    def test_error_create_location(self):
+        """test error when creating a location by a non administrator"""
+        rental_unit = create_rental_unit(user=self.user)
+        
+        payload = {
+            'rental_unit': rental_unit.id,
+        }
+        result = self.client.post(LOCATION_URL, payload)
+
+        self.assertFalse(Location.objects.filter(rental_unit=payload['rental_unit']).exists())
+        self.assertEqual(result.status_code, status.HTTP_401_UNAUTHORIZED)
+        
+        
+class AdminLocationApiTests(TestCase):
+    """test authorized API requests."""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = create_superuser(
+            email='testadmin@example.com',
+            password='testpass123'
+        )
+        self.client.force_authenticate(user=self.user)
+    
+    def test_create_location(self):
+        """test creating a location by an administrator"""
+        rental_unit = create_rental_unit(user=self.user)
+        
+        payload = {
+            'rental_unit': rental_unit.id,
+        }
+        result = self.client.post(LOCATION_URL, payload)
+
+        self.assertEqual(result.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(Location.objects.filter(rental_unit=payload['rental_unit']).exists())
