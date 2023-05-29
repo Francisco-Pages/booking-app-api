@@ -10,7 +10,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import AmenitiesList, RentalUnit, Location
+from core.models import RentalUnit, Location
 
 from rental_unit.serializers import (
     LocationSerializer,
@@ -107,7 +107,7 @@ class PrivateLocationApiTests(TestCase):
         )
         self.client.force_authenticate(user=self.user)
         
-    def test_retrieve_locations_list(self):
+    def test_get_all_locations_list(self):
         """test retrieving a list of Locations"""
         rental_unit = create_rental_unit(user=self.user)
         rental_unit_two = create_rental_unit(user=self.user)

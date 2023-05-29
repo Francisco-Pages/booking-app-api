@@ -67,63 +67,23 @@ class RentalUnitViewSet(viewsets.ModelViewSet):
         else:
             instance.delete()
 
-class AmenitiesListViewSet(
-    mixins.CreateModelMixin,
-    mixins.DestroyModelMixin,
-    mixins.UpdateModelMixin, 
-    mixins.ListModelMixin, 
-    mixins.RetrieveModelMixin,
-    viewsets.GenericViewSet):
+class AmenitiesListViewSet(viewsets.ModelViewSet):
     """view for manage the amenities list for the rental unit APIs"""
     serializer_class = serializers.AmenitiesListDetailSerializer
     queryset = AmenitiesList.objects.all()
     authentication_classes = [TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, permissions.DjangoModelPermissionsOrAnonReadOnly]
     
     def get_queryset(self):
         """retrieve amenities list for authenticated users"""
         return self.queryset.all().order_by('-rental_unit')
     
-    # def perform_create(self, serializer):
-    #     """create a new amenities list"""
-    #     user = self.request.user
-        
-    #     if user.is_staff == False:
-    #         raise drf_serializers.ValidationError('Not authorized to create amenities')
-    #     else:
-    #         serializer.save(user=user)
-    
-    def perform_update(self, serializer):
-        user = self.request.user
-        
-        if user.is_staff == False:
-            raise drf_serializers.ValidationError('Not authorized to update amenities.')
-        else:
-            serializer.save(user=user)
-    
-    def perform_destroy(self, instance):
-        user = self.request.user
-        
-        if user.is_staff == False:
-            raise drf_serializers.ValidationError('Not authorized to delete amenities.')
-        else:
-            instance.delete()
-    
-#     def get_serializer_class(self):
-#         """returns serializer class for request"""
-#         if self.action == 'list':
-#             return serializers.AmenitiesSerializer
-#         return self.serializer_class
-    
-    # def perform_create(self, serializer):
-    #     """create a new amenities list"""
-    #     user = self.request.user
-    #     rental_unit_of_user = RentalUnit.objects.filter(user=user)
-    #     if user.is_staff == False:
-    #         raise drf_serializers.ValidationError('Not authorized to create a list of amenities')
-    #     if rental_unit_of_user.rental_unit_id not in RentalUnit.objects.filter:
-    #         serializer.save(user=user)
-    
+    def get_serializer_class(self):
+        """returns serializer class for request"""
+        if self.action == 'list':
+            return serializers.AmenitiesListSerializer
+        return self.serializer_class
+
     
 class LocationViewSet(viewsets.ModelViewSet):
     """view for manage the location for the rental unit APIs"""
