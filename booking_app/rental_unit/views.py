@@ -130,7 +130,7 @@ class LocationViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.LocationDetailSerializer
     queryset = Location.objects.all()
     authentication_classes = [TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, permissions.DjangoModelPermissionsOrAnonReadOnly]
     
     def get_queryset(self):
         """retrieve locations for authenticated users"""

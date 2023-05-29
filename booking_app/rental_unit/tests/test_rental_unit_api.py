@@ -242,7 +242,7 @@ class AdminRentalUnitApiTests(TestCase):
         for k, v in payload.items():
             self.assertEqual(getattr(rental_unit, k), v)
         self.assertEqual(rental_unit.user, self.user)
-
+        
     def test_delete_rental_unit(self):
         """test deleting a rental unit"""
         rental_unit = create_rental_unit(user=self.user)
