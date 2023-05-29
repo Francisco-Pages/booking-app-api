@@ -75,10 +75,26 @@ class PublicLocationApiTests(TestCase):
     def setUp(self):
         self.client = APIClient()
 
-    def test_auth_required(self):
+    def test_get_location_by_non_auth(self):
+        """test that unauthenticated requests can read locations"""
         result = self.client.get(LOCATION_URL)
 
         self.assertEqual(result.status_code, status.HTTP_200_OK)
+        
+    def test_get_location_detail_by_non_auth(self):
+        """test that an unauthenticated request can read a detailed location"""
+        user = create_user(
+            email='test@example.com',
+            password='testpass123'
+        )
+        rental_unit = create_rental_unit(user=user)
+        location = create_location(rental_unit_id=rental_unit)
+        
+        url = detail_url(location.rental_unit.id)
+        result = self.client.get(url)
+        serializer = LocationDetailSerializer(location)
+
+        self.assertEqual(result.data, serializer.data)
         
 class PrivateLocationApiTests(TestCase):
     """test for authenticated API requests."""
@@ -198,7 +214,17 @@ class PrivateLocationApiTests(TestCase):
             if flag == 1:
                 continue
             self.assertEqual(getattr(location, k), v)
+
+    def test_error_delete_location(self):
+        """test error deleting a location by a non administrator"""
+        rental_unit = create_rental_unit(user=self.user)
+        location = create_location(rental_unit_id=rental_unit)
         
+        url = detail_url(location.rental_unit.id)
+        result = self.client.delete(url)
+        
+        self.assertEqual(result.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertTrue(Location.objects.filter(rental_unit=location.rental_unit.id).exists())
         
 class AdminLocationApiTests(TestCase):
     """test authorized API requests."""
@@ -279,4 +305,13 @@ class AdminLocationApiTests(TestCase):
                 continue
             self.assertEqual(getattr(location, k), v)
         
+    def test_delete_location(self):
+        """test deleting a location is successful"""
+        rental_unit = create_rental_unit(user=self.user)
+        location = create_location(rental_unit_id=rental_unit)
         
+        url = detail_url(location.rental_unit.id)
+        result = self.client.delete(url)
+        
+        self.assertEqual(result.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(Location.objects.filter(rental_unit=location.rental_unit.id).exists())

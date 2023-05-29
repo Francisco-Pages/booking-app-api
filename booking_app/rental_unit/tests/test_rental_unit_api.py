@@ -244,7 +244,7 @@ class AdminRentalUnitApiTests(TestCase):
         self.assertEqual(rental_unit.user, self.user)
         
     def test_delete_rental_unit(self):
-        """test deleting a rental unit"""
+        """test deleting a rental unit is successful"""
         rental_unit = create_rental_unit(user=self.user)
 
         url = detail_url(rental_unit.id)
