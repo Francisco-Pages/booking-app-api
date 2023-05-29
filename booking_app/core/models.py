@@ -224,3 +224,27 @@ class Location(models.Model):
     
     def __str__(self):
         return f"Location for rental unit #{self.rental_unit.id}."
+    
+ROOM_TYPE_CHOICES = (
+    
+)
+BED_TYPE_CHOICES = (
+    
+)
+BATHROOM_TYPE_CHOICES = (
+    
+)
+SHOWER_TYPE_CHOICES = (
+    
+)
+    
+class RoomOrSpace(models.Model):
+    """a room or space in a rental unit"""
+    rental_unit = models.OneToOneField(RentalUnit, primary_key=True, on_delete=models.CASCADE)
+    room_name = models.CharField(max_length=255, blank=True)
+    room_type = models.CharField(max_length=20,choices=ROOM_TYPE_CHOICES, blank=True)
+    bed_type = models.CharField(max_length=20,choices=BED_TYPE_CHOICES, blank=True)
+    bathroom_type = models.CharField(max_length=20,choices=BATHROOM_TYPE_CHOICES, blank=True)
+    tv = models.BooleanField(default=False)
+    shower_type = models.CharField(max_length=20,choices=SHOWER_TYPE_CHOICES, blank=True)
+    accessible = models.BooleanField(default=False)

@@ -95,3 +95,12 @@ class ModelTest(TestCase):
         location = models.Location.objects.create(rental_unit=rental_unit)
         
         self.assertTrue(models.Location.objects.filter(rental_unit=location.rental_unit).exists())
+        
+    def test_create_room_or_space(self):
+        """test creating a room or space for a rental unit is successful"""
+        user = create_superuser(email='test@example.com', password='test1234')
+        rental_unit = models.RentalUnit.objects.create(user=user, title="a new home with a location")
+        
+        room_or_space = models.RoomOrSpace.objects.create(rental_unit=rental_unit)
+        
+        self.assertTrue(models.RoomOrSpace.objects.filter(rental_unit=room_or_space.rental_unit).exists())
