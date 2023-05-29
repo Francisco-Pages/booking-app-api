@@ -45,4 +45,4 @@ admin.site.register(models.User, UserAdmin)
 admin.site.register(models.RentalUnit)
 admin.site.register(models.AmenitiesList)
 admin.site.register(models.Location)
-
+admin.site.register(models.Room)

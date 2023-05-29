@@ -12,6 +12,7 @@ router = DefaultRouter()
 router.register('rental_units', views.RentalUnitViewSet)
 router.register('amenities_lists', views.AmenitiesListViewSet)
 router.register('locations', views.LocationViewSet)
+router.register('rooms', views.RoomViewSet)
 
 app_name = 'rental_unit'
 

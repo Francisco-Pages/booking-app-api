@@ -8,7 +8,7 @@ from rest_framework import serializers as drf_serializers
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import permissions, response, status
 
-from core.models import RentalUnit, AmenitiesList, Location
+from core.models import RentalUnit, AmenitiesList, Location, Room
 from rental_unit import serializers
 
 
@@ -100,5 +100,23 @@ class LocationViewSet(viewsets.ModelViewSet):
         """returns serializer class for request"""
         if self.action == 'list':
             return serializers.LocationSerializer
+        return self.serializer_class
+    
+    
+class RoomViewSet(viewsets.ModelViewSet):
+    """view for manage the Room for the rental unit APIs"""
+    serializer_class = serializers.RoomDetailSerializer
+    queryset = Room.objects.all()
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, permissions.DjangoModelPermissionsOrAnonReadOnly]
+    
+    def get_queryset(self):
+        """retrieve locations for authenticated users"""
+        return self.queryset.all().order_by('-rental_unit')   
+    
+    def get_serializer_class(self):
+        """returns serializer class for request"""
+        if self.action == 'list':
+            return serializers.RoomSerializer
         return self.serializer_class
     
