@@ -112,3 +112,39 @@ class PrivateRoomApiTests(TestCase):
         serializer = RoomDetailSerializer(room)
         self.assertEqual(result.data, serializer.data)
         
+    def test_error_create_room(self):
+        """test error creating a Room by a non administrator"""
+        rental_unit = create_rental_unit(user=self.user)
+        
+        payload = {
+            'rental_unit': rental_unit.id,
+        }
+        result = self.client.post(ROOM_URL, payload)
+
+        self.assertEqual(result.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertFalse(Room.objects.filter(rental_unit=payload['rental_unit']).exists())
+        
+        
+class AdminRoomApiTests(TestCase):
+    """test authorized API requests."""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = create_superuser(
+            email='testadmin@example.com',
+            password='testpass123'
+        )
+        self.client.force_authenticate(user=self.user)
+    
+    def test_create_room(self):
+        """test creating a Room by an administrator"""
+        rental_unit = create_rental_unit(user=self.user)
+        
+        payload = {
+            'rental_unit': rental_unit.id,
+        }
+        result = self.client.post(ROOM_URL, payload)
+
+        self.assertEqual(result.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(Room.objects.filter(rental_unit=payload['rental_unit']).exists())
+        
