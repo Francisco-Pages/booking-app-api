@@ -124,6 +124,77 @@ class PrivateRoomApiTests(TestCase):
         self.assertEqual(result.status_code, status.HTTP_403_FORBIDDEN)
         self.assertFalse(Room.objects.filter(rental_unit=payload['rental_unit']).exists())
         
+    def test_partial_update(self):
+        """test error patch of a room by a non administrator"""
+        rental_unit = create_rental_unit(user=self.user)
+        original_name = 'scarface bathroom'
+        original_room_type = 'bathroom'
+        
+        room = Room.objects.create(
+            rental_unit=rental_unit, 
+            name=original_name,
+            room_type=original_room_type
+        )
+
+        payload = {
+            'rental_unit': room.rental_unit.id,
+            'name': 'a new name',
+            'room_type': 'bedroom'
+        }
+        
+        url = detail_url(room.rental_unit.id)
+        result = self.client.patch(url, payload)
+        
+        self.assertEqual(result.status_code, status.HTTP_403_FORBIDDEN)
+        room.refresh_from_db()
+        self.assertEqual(room.room_type, original_room_type)
+        self.assertEqual(room.name, original_name)
+        
+    def test_error_full_update(self):
+        """test error when put of Room done by non admin"""
+        rental_unit = create_rental_unit(user=self.user)
+        room = Room.objects.create(
+            rental_unit=rental_unit,
+            name='default',
+            room_type='half bathroom',
+            bed_type='',
+            tv=True,
+            shower_type='jaccuzzi',
+            accessible= False,
+        )
+        
+        payload = {
+            'rental_unit': rental_unit.id,
+            'name': 'new name',
+            'room_type': 'bathroom',
+            'bed_type': '',
+            'tv': True,
+            'shower_type': '',
+            'accessible': False,
+        }
+        url = detail_url(room.rental_unit.id)
+        
+        result = self.client.put(url, payload)
+
+        self.assertEqual(result.status_code, status.HTTP_403_FORBIDDEN)
+        # room.refresh_from_db()
+        # flag = 0
+        # for k, v in payload.items():
+        #     flag += 1
+        #     if flag == 1:
+        #         continue
+        #     self.assertEqual(getattr(room, k), v)
+        
+    def test_error_delete_room(self):
+        """test error when deleting a Room by a non admin"""
+        rental_unit = create_rental_unit(user=self.user)
+        room = Room.objects.create(rental_unit=rental_unit)
+        
+        url = detail_url(room.rental_unit.id)
+        result = self.client.delete(url)
+        
+        self.assertEqual(result.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertTrue(Room.objects.filter(rental_unit=room.rental_unit.id).exists())
         
 class AdminRoomApiTests(TestCase):
     """test authorized API requests."""
@@ -148,3 +219,65 @@ class AdminRoomApiTests(TestCase):
         self.assertEqual(result.status_code, status.HTTP_201_CREATED)
         self.assertTrue(Room.objects.filter(rental_unit=payload['rental_unit']).exists())
         
+    def test_partial_update(self):
+        """test patch of a room by an administrator"""
+        rental_unit = create_rental_unit(user=self.user)
+        original_name = 'scarface bathroom'
+        original_room_type = 'bathroom'
+        
+        room = Room.objects.create(
+            rental_unit=rental_unit, 
+            name=original_name,
+            room_type=original_room_type
+        )
+
+        payload = {
+            'rental_unit': room.rental_unit.id,
+            'name': 'a new name'
+        }
+        
+        url = detail_url(room.rental_unit.id)
+        result = self.client.patch(url, payload)
+        
+        self.assertEqual(result.status_code, status.HTTP_200_OK)
+        room.refresh_from_db()
+        self.assertEqual(room.room_type, original_room_type)
+        self.assertEqual(room.name, payload['name'])
+        
+    def test_full_update(self):
+        """test put of Room"""
+        rental_unit = create_rental_unit(user=self.user)
+        room = Room.objects.create(rental_unit=rental_unit)
+        
+        payload = {
+            'rental_unit': room.rental_unit.id,
+            'name': 'new name',
+            'room_type': 'bathroom',
+            'bed_type': '',
+            'tv': True,
+            'shower_type': '',
+            'accessible': False,
+        }
+        url = detail_url(room.rental_unit.id)
+        
+        result = self.client.put(url, payload)
+
+        self.assertEqual(result.status_code, status.HTTP_200_OK)
+        room.refresh_from_db()
+        flag = 0
+        for k, v in payload.items():
+            flag += 1
+            if flag == 1:
+                continue
+            self.assertEqual(getattr(room, k), v)
+            
+    def test_delete_room(self):
+        """test deleting a Room is successful"""
+        rental_unit = create_rental_unit(user=self.user)
+        room = Room.objects.create(rental_unit=rental_unit)
+        
+        url = detail_url(room.rental_unit.id)
+        result = self.client.delete(url)
+        
+        self.assertEqual(result.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(Room.objects.filter(rental_unit=room.rental_unit.id).exists())
