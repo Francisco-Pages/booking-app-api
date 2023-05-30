@@ -116,17 +116,17 @@ class ModelTest(TestCase):
         
         self.assertTrue(models.Pricing.objects.filter(rental_unit=pricing.rental_unit).exists())
         
-    # def test_create_fee(self):
-    #     """Test creating a fee is successful."""
-    #     user = create_superuser(email='test@example.com', password='test1234')
-    #     rental_unit = models.RentalUnit.objects.create(user=user, title="a new home with a location")
-    #     pricing = models.Pricing.objects.create(rental_unit=rental_unit)
+    def test_create_fee(self):
+        """Test creating a fee is successful."""
+        user = create_superuser(email='test@example.com', password='test1234')
+        rental_unit = models.RentalUnit.objects.create(user=user, title="a new home with a location")
+        pricing = models.Pricing.objects.create(rental_unit=rental_unit)
         
-    #     fee = models.Fee.objects.create(
-    #         rental_unit=pricing.rental_unit,
-    #         name='Pet', 
-    #         price=Decimal('25.50')
-    #     )
-    #     # fee.refresh_from_db()
+        fee = models.Fee.objects.create(
+            rental_unit=pricing.rental_unit,
+            name='Pet', 
+            price=Decimal('25.50')
+        )
+        # fee.refresh_from_db()
         
-    #     self.assertTrue(models.Fee.objects.filter(id=fee.id).exists())
+        self.assertTrue(models.Fee.objects.filter(id=fee.id).exists())

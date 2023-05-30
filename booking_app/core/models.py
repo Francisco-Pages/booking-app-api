@@ -267,20 +267,23 @@ class Pricing(models.Model):
     # fees = models.ForeignKey("Fee", on_delete=models.CASCADE, blank=True)
     tax = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     
-# FEE_CHOICES = (
-#     ('Pet', 'pet'),
-#     ('Transport', 'transport'),
-#     ('Extra guest', 'extra guest'),
-# )
+FEE_CHOICES = (
+    ('Pet', 'pet'),
+    ('Transport', 'transport'),
+    ('Extra guest', 'extra guest'),
+)
     
-# class Fee(models.Model):
-#     """a detailed fee charged by a rental unit"""
-#     rental_unit = models.ForeignKey("RentalUnit", on_delete=models.CASCADE)
-#     name = models.CharField(max_length=255, choices=FEE_CHOICES, blank=False)
-#     price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
-#     description = models.TextField(blank=True)
+class Fee(models.Model):
+    """a detailed fee charged by a rental unit"""
+    rental_unit = models.ForeignKey(RentalUnit, on_delete=models.CASCADE, null=True)
+    name = models.CharField(max_length=255, choices=FEE_CHOICES, blank=False)
+    price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    description = models.TextField(blank=True)
     
-#     class Meta:
-#         constraints = [
-#             models.UniqueConstraint(fields=["name", "rental_unit"], name='Double fee is senseless.'),
-#         ]
+    # class Meta:
+    #     constraints = [
+    #         models.UniqueConstraint(fields=["rental_unit", "name"], name='Double fee is senseless.')
+    #     ]
+        
+    class Meta:
+        unique_together = ('rental_unit', 'name',)
