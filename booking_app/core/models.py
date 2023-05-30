@@ -247,3 +247,40 @@ class Room(models.Model):
     tv = models.BooleanField(default=False)
     shower_type = models.CharField(max_length=20,choices=SHOWER_TYPE_CHOICES, blank=True)
     accessible = models.BooleanField(default=False)
+    
+CURRENCY_CHOICES = (
+    ('USD', 'USD'),
+    ('GBP', 'GBP'),
+    ('YEN', 'YEN'),
+)
+
+class Pricing(models.Model):
+    """pricing details for a rental unit"""
+    rental_unit = models.OneToOneField(RentalUnit, primary_key=True, on_delete=models.CASCADE)
+    night_price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    smart_pricing = models.BooleanField(default=False)
+    min_price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    max_price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    currency = models.CharField(max_length=30, choices=CURRENCY_CHOICES, default='USD')
+    week_discount = models.IntegerField(default=0)
+    month_discount = models.IntegerField(default=0)
+    # fees = models.ForeignKey("Fee", on_delete=models.CASCADE, blank=True)
+    tax = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    
+# FEE_CHOICES = (
+#     ('Pet', 'pet'),
+#     ('Transport', 'transport'),
+#     ('Extra guest', 'extra guest'),
+# )
+    
+# class Fee(models.Model):
+#     """a detailed fee charged by a rental unit"""
+#     rental_unit = models.ForeignKey("RentalUnit", on_delete=models.CASCADE)
+#     name = models.CharField(max_length=255, choices=FEE_CHOICES, blank=False)
+#     price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+#     description = models.TextField(blank=True)
+    
+#     class Meta:
+#         constraints = [
+#             models.UniqueConstraint(fields=["name", "rental_unit"], name='Double fee is senseless.'),
+#         ]

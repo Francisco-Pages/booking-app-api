@@ -1,6 +1,8 @@
 """
 Tests for models
 """
+from decimal import Decimal
+
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 
@@ -104,3 +106,27 @@ class ModelTest(TestCase):
         room = models.Room.objects.create(rental_unit=rental_unit)
         
         self.assertTrue(models.Room.objects.filter(rental_unit=room.rental_unit).exists())
+        
+    def test_create_pricing(self):
+        """test creating a pricing list for a rental unit is successful"""
+        user = create_superuser(email='test@example.com', password='test1234')
+        rental_unit = models.RentalUnit.objects.create(user=user, title="a new home with a location")
+        
+        pricing = models.Pricing.objects.create(rental_unit=rental_unit)
+        
+        self.assertTrue(models.Pricing.objects.filter(rental_unit=pricing.rental_unit).exists())
+        
+    # def test_create_fee(self):
+    #     """Test creating a fee is successful."""
+    #     user = create_superuser(email='test@example.com', password='test1234')
+    #     rental_unit = models.RentalUnit.objects.create(user=user, title="a new home with a location")
+    #     pricing = models.Pricing.objects.create(rental_unit=rental_unit)
+        
+    #     fee = models.Fee.objects.create(
+    #         rental_unit=pricing.rental_unit,
+    #         name='Pet', 
+    #         price=Decimal('25.50')
+    #     )
+    #     # fee.refresh_from_db()
+        
+    #     self.assertTrue(models.Fee.objects.filter(id=fee.id).exists())
