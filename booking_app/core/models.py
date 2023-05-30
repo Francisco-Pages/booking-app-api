@@ -277,7 +277,7 @@ class Fee(models.Model):
     """a detailed fee charged by a rental unit"""
     rental_unit = models.ForeignKey(RentalUnit, on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=255, choices=FEE_CHOICES, blank=False)
-    price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    price = models.DecimalField(max_digits=8, decimal_places=2, null=True)
     description = models.TextField(blank=True)
     
     # class Meta:
