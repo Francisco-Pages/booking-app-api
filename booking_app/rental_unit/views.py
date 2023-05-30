@@ -135,5 +135,5 @@ class PricingViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         """returns serializer class for request"""
         if self.action == 'list':
-            return serializers.LocationSerializer
+            return serializers.PricingSerializer
         return self.serializer_class

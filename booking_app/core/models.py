@@ -237,7 +237,7 @@ BATHROOM_TYPE_CHOICES = (
 SHOWER_TYPE_CHOICES = (
     
 )
-    
+
 class Room(models.Model):
     """a room or space in a rental unit"""
     rental_unit = models.OneToOneField(RentalUnit, primary_key=True, on_delete=models.CASCADE)
