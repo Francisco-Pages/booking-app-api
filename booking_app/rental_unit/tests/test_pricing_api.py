@@ -131,75 +131,61 @@ class PrivatePricingApiTests(TestCase):
         self.assertEqual(result.status_code, status.HTTP_403_FORBIDDEN)
         self.assertFalse(Pricing.objects.filter(rental_unit=payload['rental_unit']).exists())
         
-    # def test_error_partial_update(self):
-    #     """test error patch of a pricing by a non administrator"""
-    #     rental_unit = create_rental_unit(user=self.user)
-    #     original_address1 = '2519 golf view dr'
-    #     original_city = 'weston'
+    def test_error_partial_update(self):
+        """test error patch of a pricing by a non administrator"""
+        rental_unit = create_rental_unit(user=self.user)
+        original_night_price = Decimal('150.99')
+        original_currency = 'BIT'
         
-    #     pricing = Pricing.objects.create(
-    #         rental_unit=rental_unit, 
-    #         address1=original_address1,
-    #         city=original_city
-    #     )
+        pricing = Pricing.objects.create(
+            rental_unit=rental_unit, 
+            night_price=original_night_price,
+            currency=original_currency
+        )
 
-    #     payload = {
-    #         'rental_unit':rental_unit.id,
-    #         'address1': 'a new address'
-    #     }
+        payload = {
+            'rental_unit':pricing.rental_unit.id,
+            'night_price': Decimal('200.99')
+        }
         
-    #     url = detail_url(pricing.rental_unit.id)
-    #     result = self.client.patch(url, payload)
+        url = detail_url(pricing.rental_unit.id)
+        result = self.client.patch(url, payload)
 
-    #     self.assertEqual(result.status_code, status.HTTP_403_FORBIDDEN)
-    #     pricing.refresh_from_db()
-    #     self.assertEqual(pricing.city, original_city)
-    #     self.assertEqual(pricing.address1, original_address1)
+        self.assertEqual(result.status_code, status.HTTP_403_FORBIDDEN)
+        pricing.refresh_from_db()
+        self.assertEqual(pricing.night_price, original_night_price)
+        self.assertEqual(pricing.currency, original_currency)
         
-    # def test_error_full_update(self):
-    #     """test error of put of pricing"""
-    #     rental_unit = create_rental_unit(user=self.user)
+    def test_error_full_update(self):
+        """test error of put of pricing"""
+        rental_unit = create_rental_unit(user=self.user)
         
-    #     original_values = {
-    #         'neighborhood_description': 'default description',
-    #         'getting_around': 'default getting around',
-    #         'pricing_sharing': False,
-    #         'address1': 'default address 1',
-    #         'address2': 'default address 2',
-    #         'zip_code': '123456',
-    #         'city': 'default city',
-    #         'country': 'USA',
-    #         'longitude': Decimal('1.11111'),
-    #         'latitude': Decimal('1.11111'),
-    #     }
-    #     pricing = create_pricing(rental_unit_id=rental_unit, **original_values)
+        pricing = Pricing.objects.create(rental_unit=rental_unit)
         
-    #     payload = {
-    #         'rental_unit': pricing.rental_unit.id,
-    #         'neighborhood_description': 'lots of constructions, lots of mosquitos.',
-    #         'getting_around': 'do not move the furniture, thank you.',
-    #         'pricing_sharing': False,
-    #         'address1': '2201 sole mia sq ln',
-    #         'address2': 'apt 232',
-    #         'zip_code': '33160',
-    #         'city': 'North Miami',
-    #         'country': 'USA',
-    #         'longitude': Decimal('4.69584'),
-    #         'latitude': Decimal('3.1212'),
-    #     }
+        payload = {
+            'rental_unit': pricing.rental_unit.id,
+            'night_price': Decimal('100.99'),
+            'smart_pricing': True,
+            'min_price': Decimal('100'),
+            'max_price': Decimal('150'),
+            'currency': 'YEN',
+            'week_discount': 10,
+            'month_discount': 15,
+            'tax': Decimal('7.00'),
+        }
         
-    #     url = detail_url(pricing.rental_unit.id)
+        url = detail_url(pricing.rental_unit.id)
         
-    #     result = self.client.put(url, payload)
+        result = self.client.put(url, payload)
 
-    #     self.assertEqual(result.status_code, status.HTTP_403_FORBIDDEN)
-    #     pricing.refresh_from_db()
-    #     flag = 0
-    #     for k, v in original_values.items():
-    #         flag += 1
-    #         if flag == 1:
-    #             continue
-    #         self.assertEqual(getattr(pricing, k), v)
+        self.assertEqual(result.status_code, status.HTTP_403_FORBIDDEN)
+        pricing.refresh_from_db()
+        # flag = 0
+        # for k, v in original_values.items():
+        #     flag += 1
+        #     if flag == 1:
+        #         continue
+        #     self.assertEqual(getattr(pricing, k), v)
 
     def test_error_delete_pricing(self):
         """test error deleting a pricing by a non administrator"""
@@ -236,61 +222,61 @@ class AdminPricingApiTests(TestCase):
         self.assertEqual(result.status_code, status.HTTP_201_CREATED)
         self.assertTrue(Pricing.objects.filter(rental_unit=payload['rental_unit']).exists())
         
-    # def test_partial_update(self):
-    #     """test patch of a pricing by an administrator"""
-    #     rental_unit = create_rental_unit(user=self.user)
-    #     original_address1 = '2519 golf view dr'
-    #     original_city = 'weston'
+    def test_partial_update(self):
+        """test patch of a pricing by an administrator"""
+        rental_unit = create_rental_unit(user=self.user)
+        original_night_price = Decimal('150.99')
+        original_currency = 'BIT'
         
-    #     pricing = Pricing.objects.create(
-    #         rental_unit=rental_unit, 
-    #         address1=original_address1,
-    #         city=original_city
-    #     )
+        pricing = Pricing.objects.create(
+            rental_unit=rental_unit, 
+            night_price=original_night_price,
+            currency=original_currency
+        )
 
-    #     payload = {
-    #         'rental_unit': pricing.rental_unit.id,
-    #         'address1': 'a new address'
-    #     }
+        payload = {
+            'rental_unit':pricing.rental_unit.id,
+            'night_price': Decimal('200.99')
+        }
         
-    #     url = detail_url(pricing.rental_unit.id)
-    #     result = self.client.patch(url, payload)
-        
-    #     self.assertEqual(result.status_code, status.HTTP_200_OK)
-    #     pricing.refresh_from_db()
-    #     self.assertEqual(pricing.city, original_city)
-    #     self.assertEqual(pricing.address1, payload['address1'])
-        
-    # def test_full_update(self):
-    #     """test put of pricing"""
-    #     rental_unit = create_rental_unit(user=self.user)
-    #     pricing = Pricing.objects.create(rental_unit=rental_unit)
-        
-    #     payload = {
-    #         'rental_unit': pricing.rental_unit.id,
-    #         'neighborhood_description': 'lots of constructions, lots of mosquitos.',
-    #         'getting_around': 'do not move the furniture, thank you.',
-    #         'pricing_sharing': False,
-    #         'address1': '2201 sole mia sq ln',
-    #         'address2': 'apt 232',
-    #         'zip_code': '33160',
-    #         'city': 'North Miami',
-    #         'country': 'USA',
-    #         'longitude': Decimal('4.69584'),
-    #         'latitude': Decimal('3.1212'),
-    #     }
-    #     url = detail_url(pricing.rental_unit.id)
-        
-    #     result = self.client.put(url, payload)
+        url = detail_url(pricing.rental_unit.id)
+        result = self.client.patch(url, payload)
 
-    #     self.assertEqual(result.status_code, status.HTTP_200_OK)
-    #     pricing.refresh_from_db()
-    #     flag = 0
-    #     for k, v in payload.items():
-    #         flag += 1
-    #         if flag == 1:
-    #             continue
-    #         self.assertEqual(getattr(pricing, k), v)
+        self.assertEqual(result.status_code, status.HTTP_200_OK)
+        pricing.refresh_from_db()
+        self.assertEqual(pricing.night_price, payload['night_price'])
+        self.assertEqual(pricing.currency, original_currency)
+        
+    def test_full_update(self):
+        """test put of pricing"""
+        rental_unit = create_rental_unit(user=self.user)
+        
+        pricing = Pricing.objects.create(rental_unit=rental_unit)
+        
+        payload = {
+            'rental_unit': pricing.rental_unit.id,
+            'night_price': Decimal('100.99'),
+            'smart_pricing': True,
+            'min_price': Decimal('100'),
+            'max_price': Decimal('150'),
+            'currency': 'YEN',
+            'week_discount': 10,
+            'month_discount': 15,
+            'tax': Decimal('7.00'),
+        }
+        
+        url = detail_url(pricing.rental_unit.id)
+        
+        result = self.client.put(url, payload)
+
+        self.assertEqual(result.status_code, status.HTTP_200_OK)
+        pricing.refresh_from_db()
+        flag = 0
+        for k, v in payload.items():
+            flag += 1
+            if flag == 1:
+                continue
+            self.assertEqual(getattr(pricing, k), v)
         
     def test_delete_pricing(self):
         """test deleting a pricing is successful"""
