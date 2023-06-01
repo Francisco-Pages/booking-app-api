@@ -8,6 +8,7 @@ from django.contrib.auth.models import (
     BaseUserManager,
     PermissionsMixin,
 )
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class UserManager(BaseUserManager):
@@ -282,3 +283,50 @@ class Fee(models.Model):
     
     class Meta:
         unique_together = ('rental_unit', 'name',)
+        
+        
+DAY_CHOICES = {
+    
+}
+        
+class Availability(models.Model):
+    """availability preferences for a rental unit"""
+    rental_unit = models.ForeignKey(RentalUnit, on_delete=models.CASCADE, null=True)
+    min_stay = models.IntegerField(
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(7)
+        ],
+        default=1
+    )
+    max_stay = models.IntegerField(
+        validators=[
+            MinValueValidator(8),
+            MaxValueValidator(90)
+        ],
+        default=90
+    )
+    min_notice = models.IntegerField(
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(30)
+        ],
+        default=1
+    )
+    max_notice = models.IntegerField(
+        validators=[
+            MinValueValidator(31),
+            MaxValueValidator(365)
+        ],
+        default=365
+    )
+    prep_time = models.IntegerField(
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(72)
+        ],
+        default=72
+    )
+    no_checkin_days = models.CharField(max_length=8, choices=DAY_CHOICES, blank=True)
+    no_checkout_days = models.CharField(max_length=8, choices=DAY_CHOICES, blank=True)
+    
