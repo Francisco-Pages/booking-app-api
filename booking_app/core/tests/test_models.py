@@ -130,3 +130,15 @@ class ModelTest(TestCase):
         # fee.refresh_from_db()
         
         self.assertTrue(models.Fee.objects.filter(id=fee.id).exists())
+        
+    def test_create_availability(self):
+        """Test creating availability preference for a rental unit is successful."""
+        user = create_superuser(email='test@example.com', password='test1234')
+        rental_unit = models.RentalUnit.objects.create(user=user, title="a new home with availability preferences")
+        availability = models.Availability.objects.create(rental_unit=rental_unit)
+        
+        availability = models.Fee.objects.create(
+            rental_unit=availability.rental_unit,
+        )
+        
+        self.assertTrue(models.Availability.objects.filter(rental_unit=availability.rental_unit).exists())

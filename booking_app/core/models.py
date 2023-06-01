@@ -280,10 +280,5 @@ class Fee(models.Model):
     price = models.DecimalField(max_digits=8, decimal_places=2, null=True)
     description = models.TextField(blank=True)
     
-    # class Meta:
-    #     constraints = [
-    #         models.UniqueConstraint(fields=["rental_unit", "name"], name='Double fee is senseless.')
-    #     ]
-        
     class Meta:
         unique_together = ('rental_unit', 'name',)

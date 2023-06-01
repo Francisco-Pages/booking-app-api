@@ -224,6 +224,27 @@ class AdminFeeApiTests(TestCase):
         self.assertTrue(Fee.objects.filter(rental_unit=payload['rental_unit'], name=payload['name']).exists())
         self.assertEqual(result.status_code, status.HTTP_201_CREATED)
         
+    def test_error_create_double_fee(self):
+        """test that there can only be one type of fee for one rental unit"""
+        rental_unit = create_rental_unit(user=self.user)
+        fee = Fee.objects.create(
+            rental_unit=rental_unit,
+            name='Pet',
+            price=Decimal('50.51')
+        )
+        
+        payload = {
+            'rental_unit': rental_unit.id,
+            'name': 'Pet',
+            'price': Decimal('50.50')
+        }
+        result = self.client.post(FEE_URL, payload)
+        
+        self.assertEqual(fee.price, Decimal('50.51'))
+        self.assertEqual(result.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(Fee.objects.filter(rental_unit=payload['rental_unit'], name=payload['name'], price=payload['price']).exists())
+        
+        
     def test_partial_update(self):
         """test patch of a fee by an administrator"""
         rental_unit = create_rental_unit(user=self.user)
