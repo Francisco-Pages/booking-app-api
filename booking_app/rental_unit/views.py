@@ -8,7 +8,16 @@ from rest_framework import serializers as drf_serializers
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import permissions, response, status
 
-from core.models import RentalUnit, AmenitiesList, Location, Room, Pricing, Fee, Availability
+from core.models import (
+    RentalUnit, 
+    AmenitiesList, 
+    Location, 
+    Room, 
+    Pricing, 
+    Fee, 
+    Availability, 
+    CalendarEvent
+)
 from rental_unit import serializers
 
 
@@ -172,4 +181,22 @@ class AvailabilityViewSet(viewsets.ModelViewSet):
         """returns serializer class for request"""
         if self.action == 'list':
             return serializers.AvailabilitySerializer
+        return self.serializer_class
+    
+    
+class CalendarEventViewSet(viewsets.ModelViewSet):
+    """view for manage the Fee for the rental unit APIs"""
+    serializer_class = serializers.CalendarEventDetailSerializer
+    queryset = CalendarEvent.objects.all()
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, permissions.DjangoModelPermissionsOrAnonReadOnly]
+    
+    def get_queryset(self):
+        """retrieve CalendarEvent for authenticated users"""
+        return self.queryset.all().order_by('-rental_unit')   
+    
+    def get_serializer_class(self):
+        """returns serializer class for request"""
+        if self.action == 'list':
+            return serializers.CalendarEventSerializer
         return self.serializer_class

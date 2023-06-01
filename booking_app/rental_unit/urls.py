@@ -16,6 +16,7 @@ router.register('rooms', views.RoomViewSet)
 router.register('pricings', views.PricingViewSet)
 router.register('fees', views.FeeViewSet)
 router.register('availabilitys', views.AvailabilityViewSet)
+router.register('calendar_events', views.CalendarEventViewSet)
 
 
 app_name = 'rental_unit'
