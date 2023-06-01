@@ -3,7 +3,7 @@ serializers for rental unit API
 """
 from rest_framework import serializers
 
-from core.models import RentalUnit, AmenitiesList, Location, Room, Pricing, Fee
+from core.models import RentalUnit, AmenitiesList, Location, Room, Pricing, Fee, Availability
 
 
 class RentalUnitSerializer(serializers.ModelSerializer):
@@ -109,3 +109,19 @@ class FeeDetailSerializer(FeeSerializer):
     
     class Meta(FeeSerializer.Meta):
         fields = FeeSerializer.Meta.fields 
+        
+        
+class AvailabilitySerializer(serializers.ModelSerializer):
+    """Serializer for Availability"""
+    
+    class Meta:
+        model = Availability
+        fields = '__all__'
+        # read_only_fields = ['rental_unit']
+
+
+class AvailabilityDetailSerializer(AvailabilitySerializer):
+    """Serializer for Availability detail view"""
+    
+    class Meta(AvailabilitySerializer.Meta):
+        fields = AvailabilitySerializer.Meta.fields 

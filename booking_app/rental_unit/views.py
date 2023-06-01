@@ -8,7 +8,7 @@ from rest_framework import serializers as drf_serializers
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import permissions, response, status
 
-from core.models import RentalUnit, AmenitiesList, Location, Room, Pricing, Fee
+from core.models import RentalUnit, AmenitiesList, Location, Room, Pricing, Fee, Availability
 from rental_unit import serializers
 
 
@@ -154,4 +154,22 @@ class FeeViewSet(viewsets.ModelViewSet):
         """returns serializer class for request"""
         if self.action == 'list':
             return serializers.FeeSerializer
+        return self.serializer_class
+    
+    
+class AvailabilityViewSet(viewsets.ModelViewSet):
+    """view for manage the Availability for the rental unit APIs"""
+    serializer_class = serializers.AvailabilityDetailSerializer
+    queryset = Availability.objects.all()
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, permissions.DjangoModelPermissionsOrAnonReadOnly]
+    
+    def get_queryset(self):
+        """retrieve Availability for authenticated users"""
+        return self.queryset.all().order_by('-rental_unit')   
+    
+    def get_serializer_class(self):
+        """returns serializer class for request"""
+        if self.action == 'list':
+            return serializers.AvailabilitySerializer
         return self.serializer_class
