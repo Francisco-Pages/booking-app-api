@@ -15,7 +15,7 @@ router.register('locations', views.LocationViewSet)
 router.register('rooms', views.RoomViewSet)
 router.register('pricings', views.PricingViewSet)
 router.register('fees', views.FeeViewSet)
-router.register('fees', views.AvailabilityViewSet)
+router.register('availabilitys', views.AvailabilityViewSet)
 
 
 app_name = 'rental_unit'

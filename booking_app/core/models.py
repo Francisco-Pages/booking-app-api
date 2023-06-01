@@ -285,13 +285,19 @@ class Fee(models.Model):
         unique_together = ('rental_unit', 'name',)
         
         
-DAY_CHOICES = {
-    
-}
+DAY_CHOICES = (
+    ('Monday', 'monday'),
+    ('Tuesday', 'tuesday'),
+    ('Wednesday', 'wednesday'),
+    ('Thursday', 'thursday'),
+    ('Friday', 'friday'),
+    ('Saturday', 'saturday'),
+    ('Sunday', 'sunday'),
+)
         
 class Availability(models.Model):
     """availability preferences for a rental unit"""
-    rental_unit = models.ForeignKey(RentalUnit, on_delete=models.CASCADE, null=True)
+    rental_unit = models.OneToOneField(RentalUnit, primary_key=True, on_delete=models.CASCADE)
     min_stay = models.IntegerField(
         validators=[
             MinValueValidator(1),
@@ -327,6 +333,5 @@ class Availability(models.Model):
         ],
         default=72
     )
-    no_checkin_days = models.CharField(max_length=8, choices=DAY_CHOICES, blank=True)
-    no_checkout_days = models.CharField(max_length=8, choices=DAY_CHOICES, blank=True)
+
     
