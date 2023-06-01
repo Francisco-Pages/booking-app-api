@@ -120,14 +120,8 @@ class ModelTest(TestCase):
         """Test creating a fee is successful."""
         user = create_superuser(email='test@example.com', password='test1234')
         rental_unit = models.RentalUnit.objects.create(user=user, title="a new home with a location")
-        pricing = models.Pricing.objects.create(rental_unit=rental_unit)
-        
-        fee = models.Fee.objects.create(
-            rental_unit=pricing.rental_unit,
-            name='Pet', 
-            price=Decimal('25.50')
-        )
-        # fee.refresh_from_db()
+    
+        fee = models.Fee.objects.create(rental_unit=rental_unit)
         
         self.assertTrue(models.Fee.objects.filter(id=fee.id).exists())
         
@@ -135,10 +129,20 @@ class ModelTest(TestCase):
         """Test creating availability preference for a rental unit is successful."""
         user = create_superuser(email='test@example.com', password='test1234')
         rental_unit = models.RentalUnit.objects.create(user=user, title="a new home with availability preferences")
+        
         availability = models.Availability.objects.create(rental_unit=rental_unit)
         
-        availability = models.Fee.objects.create(
-            rental_unit=availability.rental_unit,
-        )
-        
         self.assertTrue(models.Availability.objects.filter(rental_unit=availability.rental_unit).exists())
+        
+    def test_create_calendar_event(self):
+        """Test creating calendar event for a rental unit is successful."""
+        user = create_superuser(email='test@example.com', password='test1234')
+        rental_unit = models.RentalUnit.objects.create(user=user, title="a new home with availability preferences")
+        
+        calendar_event = models.CalendarEvent.objects.create(
+            rental_unit=rental_unit,
+            reason='Reserved'
+        )
+
+        self.assertTrue(models.CalendarEvent.objects.filter(id=calendar_event.id).exists())
+        
