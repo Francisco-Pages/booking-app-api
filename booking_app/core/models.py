@@ -335,8 +335,8 @@ class Availability(models.Model):
     )
 
 EVENT_CHOICES = (
-    ('Reserved', 'reserved'),
-    ('Blocked', 'Blocked')
+    ('Reservation', 'reservation'),
+    ('Blocked', 'blocked')
 )
     
 class CalendarEvent(models.Model):

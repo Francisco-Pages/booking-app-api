@@ -142,7 +142,7 @@ class CalendarEventSerializer(serializers.ModelSerializer):
     class Meta:
         model = CalendarEvent
         fields = '__all__'
-        # read_only_fields = ['rental_unit']
+        read_only_fields = ['creation_date', 'rental_unit','id']
 
 
 class CalendarEventDetailSerializer(CalendarEventSerializer):
