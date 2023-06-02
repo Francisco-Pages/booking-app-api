@@ -246,14 +246,12 @@ database design
         cancellation policy
         instant book
         house rules
-            pets allowed
-            events allowed
-            smoking, vaping, e-cigarettes allowed
-            commercial photography and filming allowed
-            quiet hours
-            max guests
-            additional rules 
-                rule text
+        pets allowed
+        events allowed
+        smoking, vaping, e-cigarettes allowed
+        commercial photography and filming allowed
+        quiet hours
+        max guests
         guest requirements
         laws and regulations
         primary use of listing

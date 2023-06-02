@@ -347,3 +347,12 @@ class CalendarEvent(models.Model):
     end_date = models.DateTimeField(blank=True, null=True)
     creation_date = models.DateTimeField(auto_now_add=True)
     notes = models.TextField(blank=True)
+
+class Accessibility(models.Model):
+    """accessibility details for a rental unit"""
+    rental_unit = models.OneToOneField(RentalUnit, primary_key=True, on_delete=models.CASCADE)
+    entrance = models.BooleanField(default=False)
+    parking = models.BooleanField(default=False)
+    lavatory_equipment = models.BooleanField(default=False)
+    door_width = models.BooleanField(default=False)
+    stairs = models.BooleanField(default=False)

@@ -11,7 +11,8 @@ from core.models import (
     Pricing, 
     Fee, 
     Availability, 
-    CalendarEvent
+    CalendarEvent,
+    Accessibility
 )
 
 
@@ -150,3 +151,18 @@ class CalendarEventDetailSerializer(CalendarEventSerializer):
     
     class Meta(CalendarEventSerializer.Meta):
         fields = CalendarEventSerializer.Meta.fields 
+        
+class AccessibilitySerializer(serializers.ModelSerializer):
+    """Serializer for Accessibility"""
+    
+    class Meta:
+        model = Accessibility
+        fields = '__all__'
+        read_only_fields = ['creation_date', 'rental_unit','id']
+
+
+class AccessibilityDetailSerializer(AccessibilitySerializer):
+    """Serializer for Accessibility detail view"""
+    
+    class Meta(AccessibilitySerializer.Meta):
+        fields = AccessibilitySerializer.Meta.fields 
