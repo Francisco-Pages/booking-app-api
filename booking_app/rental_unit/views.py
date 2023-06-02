@@ -16,8 +16,7 @@ from core.models import (
     Pricing, 
     Fee, 
     Availability, 
-    CalendarEvent,
-    Accessibility
+    CalendarEvent
 )
 from rental_unit import serializers
 
@@ -203,19 +202,3 @@ class CalendarEventViewSet(viewsets.ModelViewSet):
         return self.serializer_class
     
     
-class AccessibilityViewSet(viewsets.ModelViewSet):
-    """view for manage the Accessibility for the rental unit APIs"""
-    serializer_class = serializers.AccessibilityDetailSerializer
-    queryset = Accessibility.objects.all()
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly, permissions.DjangoModelPermissionsOrAnonReadOnly]
-    
-    def get_queryset(self):
-        """retrieve CalendarEvent for authenticated users"""
-        return self.queryset.all().order_by('-rental_unit')   
-    
-    def get_serializer_class(self):
-        """returns serializer class for request"""
-        if self.action == 'list':
-            return serializers.AccessibilitySerializer
-        return self.serializer_class

@@ -205,6 +205,30 @@ class AmenitiesList(models.Model):
     services_cleaning_available_during_stay = models.BooleanField(default=False)
     services_long_term_stays_allowed = models.BooleanField(default=False)
     services_luggage_dropoff_allowed = models.BooleanField(default=False)
+    accessibility_entrance = models.BooleanField(default=False)
+    accessibility_parking = models.BooleanField(default=False)
+    accessibility_lavatory_equipment = models.BooleanField(default=False)
+    accessibility_wide_doors = models.BooleanField(default=False)
+    accessibility_stairs = models.BooleanField(default=False)
+    safety_carbon_monoxide_alarm = models.BooleanField(default=False)
+    safety_fire_extinguisher = models.BooleanField(default=False)
+    safety_first_aid_kit = models.BooleanField(default=False)
+    safety_smoke_alarm = models.BooleanField(default=False)
+    safety_unsuitable_for_children_2_12 = models.BooleanField(default=False)
+    safety_unsuitable_for_infants_under_2 = models.BooleanField(default=False)
+    safety_pool_or_hot_tub_without_gate_or_lock = models.BooleanField(default=False)
+    safety_nearby_body_of_water = models.BooleanField(default=False)
+    safety_climbing_or_play_structure = models.BooleanField(default=False)
+    safety_heights_without_rails = models.BooleanField(default=False)
+    safety_dangerous_animals = models.BooleanField(default=False)
+    safety_security_cameras = models.BooleanField(default=False)
+    safety_audio_recording_devices = models.BooleanField(default=False)
+    safety_must_climb_stairs = models.BooleanField(default=False)
+    safety_potential_for_noise = models.BooleanField(default=False)
+    safety_pet_in_property = models.BooleanField(default=False)
+    safety_no_parking_on_property = models.BooleanField(default=False)
+    safety_some_spaces_are_shared = models.BooleanField(default=False)
+    safety_weapons_on_property = models.BooleanField(default=False)
     
     def __str__(self):
         return f"Amenities for rental unit #{self.rental_unit.id}."
@@ -347,12 +371,3 @@ class CalendarEvent(models.Model):
     end_date = models.DateTimeField(blank=True, null=True)
     creation_date = models.DateTimeField(auto_now_add=True)
     notes = models.TextField(blank=True)
-
-class Accessibility(models.Model):
-    """accessibility details for a rental unit"""
-    rental_unit = models.OneToOneField(RentalUnit, primary_key=True, on_delete=models.CASCADE)
-    entrance = models.BooleanField(default=False)
-    parking = models.BooleanField(default=False)
-    lavatory_equipment = models.BooleanField(default=False)
-    door_width = models.BooleanField(default=False)
-    stairs = models.BooleanField(default=False)
