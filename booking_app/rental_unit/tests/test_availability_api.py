@@ -47,6 +47,7 @@ def create_availability(rental_unit_id, **params):
         'min_notice': 1,
         'max_notice': 365,
         'prep_time': 72,
+        'instant_booking': False
     }
     defaults.update(params)
     
@@ -177,6 +178,7 @@ class PrivateAvailabilityApiTests(TestCase):
             'min_notice': 30,
             'max_notice': 31,
             'prep_time': 48,
+            'instant_booking': False
         }
         
         availability = create_availability(rental_unit_id=rental_unit, **original_values)
@@ -188,6 +190,7 @@ class PrivateAvailabilityApiTests(TestCase):
             'min_notice': 30,
             'max_notice': 31,
             'prep_time': 48,
+            'instant_booking': True
         }
         url = detail_url(availability.rental_unit.id)
         
@@ -273,6 +276,7 @@ class AdminAvailabilityApiTests(TestCase):
             'min_notice': 30,
             'max_notice': 31,
             'prep_time': 48,
+            'instant_booking': False
         }
         url = detail_url(availability.rental_unit.id)
         

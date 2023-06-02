@@ -357,6 +357,7 @@ class Availability(models.Model):
         ],
         default=72
     )
+    instant_booking = models.BooleanField(default=False)
 
 EVENT_CHOICES = (
     ('Reservation', 'reservation'),
