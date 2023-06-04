@@ -359,9 +359,10 @@ class Availability(models.Model):
     )
     instant_booking = models.BooleanField(default=False)
 
+
 EVENT_CHOICES = (
     ('Reservation', 'reservation'),
-    ('Blocked', 'blocked')
+    ('Blocked', 'blocked'),
 )
     
 class CalendarEvent(models.Model):
@@ -372,3 +373,27 @@ class CalendarEvent(models.Model):
     end_date = models.DateTimeField(blank=True, null=True)
     creation_date = models.DateTimeField(auto_now_add=True)
     notes = models.TextField(blank=True)
+
+
+CANCELLATION_CHOICES = (
+    ('Flexible', 'flexible'),
+    ('Moderate', 'moderate'),
+    ('Firm', 'firm'),
+    ('Strict', 'strict'),
+    ('Long Term', 'long Term'),
+    ('Non-refundable', 'non-refundable'),
+)
+
+
+class Rulebook(models.Model):
+    """a rule book for a rental unit"""
+    rental_unit = models.OneToOneField(RentalUnit, primary_key=True, on_delete=models.CASCADE)
+    cancellation_policy = models.CharField(max_length=50, choices=CANCELLATION_CHOICES, blank=True)
+    house_rules = models.TextField(blank=True)
+    pets_allowed = models.BooleanField(default=False)
+    events_allowed = models.BooleanField(default=False)
+    smoking_allowed = models.BooleanField(default=False)
+    commercial_photo_film_allowed = models.BooleanField(default=False)
+    guest_requirements = models.TextField(blank=True)
+    laws_and_regulations = models.TextField(blank=True)
+    

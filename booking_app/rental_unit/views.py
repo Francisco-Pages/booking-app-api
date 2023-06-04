@@ -16,7 +16,8 @@ from core.models import (
     Pricing, 
     Fee, 
     Availability, 
-    CalendarEvent
+    CalendarEvent,
+    Rulebook
 )
 from rental_unit import serializers
 
@@ -202,3 +203,19 @@ class CalendarEventViewSet(viewsets.ModelViewSet):
         return self.serializer_class
     
     
+class RulebookViewSet(viewsets.ModelViewSet):
+    """view for manage the Rulebook for the rental unit APIs"""
+    serializer_class = serializers.RulebookDetailSerializer
+    queryset = Rulebook.objects.all()
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, permissions.DjangoModelPermissionsOrAnonReadOnly]
+    
+    def get_queryset(self):
+        """retrieve Rulebook for authenticated users"""
+        return self.queryset.all().order_by('-rental_unit')   
+    
+    def get_serializer_class(self):
+        """returns serializer class for request"""
+        if self.action == 'list':
+            return serializers.RulebookSerializer
+        return self.serializer_class

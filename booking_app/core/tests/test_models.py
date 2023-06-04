@@ -145,3 +145,13 @@ class ModelTest(TestCase):
         )
 
         self.assertTrue(models.CalendarEvent.objects.filter(id=calendar_event.id).exists())
+        
+        
+    def test_create_rulebook(self):
+        """test creating the rulebook for a rental unit"""
+        user = create_superuser(email='test@example.com', password='test1234')
+        rental_unit = models.RentalUnit.objects.create(user=user, title="a new home with availability preferences")
+        
+        rulebook = models.Rulebook.objects.create(rental_unit=rental_unit)
+        
+        self.assertTrue(models.Rulebook.objects.filter(rental_unit=rental_unit).exists())
