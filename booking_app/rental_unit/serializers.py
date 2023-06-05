@@ -12,7 +12,8 @@ from core.models import (
     Fee, 
     Availability, 
     CalendarEvent,
-    Rulebook
+    Rulebook,
+    Guidebook
 )
 
 
@@ -163,7 +164,23 @@ class RulebookSerializer(serializers.ModelSerializer):
 
 
 class RulebookDetailSerializer(RulebookSerializer):
-    """Serializer for amenities list detail view"""
+    """Serializer for rulebook detail view"""
     
     class Meta(RulebookSerializer.Meta):
         fields = RulebookSerializer.Meta.fields 
+        
+        
+class GuidebookSerializer(serializers.ModelSerializer):
+    """Serializer for Guidebook"""
+    
+    class Meta:
+        model = Guidebook
+        fields = '__all__'
+        # read_only_fields = ['rental_unit']
+
+
+class GuidebookDetailSerializer(GuidebookSerializer):
+    """Serializer for guidebook detail view"""
+    
+    class Meta(GuidebookSerializer.Meta):
+        fields = GuidebookSerializer.Meta.fields 
