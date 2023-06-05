@@ -39,21 +39,23 @@ def create_rental_unit(user, **params):
     rental_unit = RentalUnit.objects.create(user=user, **defaults)
     return rental_unit
 
-# def create_rulebook(rental_unit_id, **params):
-#     """create and return a rulebook for a rental unit"""
-#     defaults = {
-#         'min_stay': 1,
-#         'max_stay': 7,
-#         'min_notice': 1,
-#         'max_notice': 365,
-#         'prep_time': 72,
-#         'instant_booking': False
-#     }
-#     defaults.update(params)
+def create_rulebook(rental_unit_id, **params):
+    """create and return a rulebook for a rental unit"""
+    defaults = {
+        'cancellation_policy': 'Flexible',
+        'house_rules': 'No rules',
+        'pets_allowed': False,
+        'events_allowed': False,
+        'smoking_allowed': False,
+        'commercial_photo_film_allowed': False,
+        'guest_requirements': 'No requirements',
+        'laws_and_regulations': 'No laws'
+    }
+    defaults.update(params)
     
-#     rulebook = Rulebook.objects.create(rental_unit=rental_unit_id, **defaults)
+    rulebook = Rulebook.objects.create(rental_unit=rental_unit_id, **defaults)
     
-#     return rulebook
+    return rulebook
 
 def create_user(**params):
     """create and return a new user"""
@@ -142,68 +144,72 @@ class PrivateRulebookApiTests(TestCase):
         self.assertEqual(result.status_code, status.HTTP_403_FORBIDDEN)
         self.assertFalse(Rulebook.objects.filter(rental_unit=payload['rental_unit']).exists())
         
-    # def test_error_partial_update(self):
-    #     """test error patch of a rulebook by a non administrator"""
-    #     rental_unit = create_rental_unit(user=self.user)
-    #     original_min_stay = 1
-    #     original_min_notice = 1
+    def test_error_partial_update(self):
+        """test error patch of a rulebook by a non administrator"""
+        rental_unit = create_rental_unit(user=self.user)
+        original_cancellation_policy = 'Flexible'
+        original_pets_allowed = True
         
-    #     rulebook = Rulebook.objects.create(
-    #         rental_unit=rental_unit, 
-    #         min_stay=original_min_stay,
-    #         min_notice=original_min_notice
-    #     )
+        rulebook = Rulebook.objects.create(
+            rental_unit=rental_unit, 
+            cancellation_policy=original_cancellation_policy,
+            pets_allowed=original_pets_allowed
+        )
 
-    #     payload = {
-    #         'rental_unit':rental_unit.id,
-    #         'min_stay': 2
-    #     }
+        payload = {
+            'rental_unit': rulebook.rental_unit.id,
+            'pets_allowed': False
+        }
         
-    #     url = detail_url(rulebook.rental_unit.id)
-    #     result = self.client.patch(url, payload)
+        url = detail_url(rulebook.rental_unit.id)
+        result = self.client.patch(url, payload)
+        
+        self.assertEqual(result.status_code, status.HTTP_403_FORBIDDEN)
+        rulebook.refresh_from_db()
+        self.assertEqual(rulebook.cancellation_policy, original_cancellation_policy)
+        self.assertEqual(rulebook.pets_allowed, original_pets_allowed)
+        
+        
+    def test_error_full_update(self):
+        """test error of put of rulebook"""
+        rental_unit = create_rental_unit(user=self.user)
+        
+        original_values = {
+            'cancellation_policy': 'Flexible',
+            'house_rules': 'No rules',
+            'pets_allowed': False,
+            'events_allowed': False,
+            'smoking_allowed': False,
+            'commercial_photo_film_allowed': False,
+            'guest_requirements': 'No requirements',
+            'laws_and_regulations': 'No laws'
+        }
+        
+        rulebook = create_rulebook(rental_unit_id=rental_unit, **original_values)
+        
+        payload = {
+            'rental_unit': rulebook.rental_unit.id,
+            'cancellation_policy': 'Firm',
+            'house_rules': 'sample house rules, no jumping on the beds',
+            'pets_allowed': True,
+            'events_allowed': True,
+            'smoking_allowed': True,
+            'commercial_photo_film_allowed': True,
+            'guest_requirements': 'must be over 18 years old to book',
+            'laws_and_regulations': 'guns are not permitted'
+        }
+        url = detail_url(rulebook.rental_unit.id)
+        
+        result = self.client.put(url, payload)
 
-    #     self.assertEqual(result.status_code, status.HTTP_403_FORBIDDEN)
-    #     rulebook.refresh_from_db()
-    #     self.assertEqual(rulebook.min_notice, original_min_notice)
-    #     self.assertEqual(rulebook.min_stay, original_min_stay)
-        
-        
-    # def test_error_full_update(self):
-    #     """test error of put of rulebook"""
-    #     rental_unit = create_rental_unit(user=self.user)
-        
-    #     original_values = {
-    #         'min_stay': 7,
-    #         'max_stay': 8,
-    #         'min_notice': 30,
-    #         'max_notice': 31,
-    #         'prep_time': 48,
-    #         'instant_booking': False
-    #     }
-        
-    #     rulebook = create_rulebook(rental_unit_id=rental_unit, **original_values)
-        
-    #     payload = {
-    #         'rental_unit': rulebook.rental_unit.id,
-    #         'min_stay': 7,
-    #         'max_stay': 8,
-    #         'min_notice': 30,
-    #         'max_notice': 31,
-    #         'prep_time': 48,
-    #         'instant_booking': True
-    #     }
-    #     url = detail_url(rulebook.rental_unit.id)
-        
-    #     result = self.client.put(url, payload)
-
-    #     self.assertEqual(result.status_code, status.HTTP_403_FORBIDDEN)
-    #     rulebook.refresh_from_db()
-    #     flag = 0
-    #     for k, v in original_values.items():
-    #         flag += 1
-    #         if flag == 1:
-    #             continue
-    #         self.assertEqual(getattr(rulebook, k), v)
+        self.assertEqual(result.status_code, status.HTTP_403_FORBIDDEN)
+        rulebook.refresh_from_db()
+        flag = 0
+        for k, v in original_values.items():
+            flag += 1
+            if flag == 1:
+                continue
+            self.assertEqual(getattr(rulebook, k), v)
 
     def test_error_delete_rulebook(self):
         """test error deleting a rulebook by a non administrator"""
@@ -239,57 +245,59 @@ class AdminRulebookApiTests(TestCase):
         self.assertEqual(result.status_code, status.HTTP_201_CREATED)
         self.assertTrue(Rulebook.objects.filter(rental_unit=payload['rental_unit']).exists())
         
-    # def test_partial_update(self):
-    #     """test patch of a rulebook by an administrator"""
-    #     rental_unit = create_rental_unit(user=self.user)
-    #     original_min_stay = 1
-    #     original_min_notice = 1
+    def test_partial_update(self):
+        """test patch of a rulebook by an administrator"""
+        rental_unit = create_rental_unit(user=self.user)
+        original_cancellation_policy = 'Flexible'
+        original_pets_allowed = True
         
-    #     rulebook = Rulebook.objects.create(
-    #         rental_unit=rental_unit, 
-    #         min_stay=original_min_stay,
-    #         min_notice=original_min_notice
-    #     )
+        rulebook = Rulebook.objects.create(
+            rental_unit=rental_unit, 
+            cancellation_policy=original_cancellation_policy,
+            pets_allowed=original_pets_allowed
+        )
 
-    #     payload = {
-    #         'rental_unit': rulebook.rental_unit.id,
-    #         'min_stay': 2
-    #     }
+        payload = {
+            'rental_unit': rulebook.rental_unit.id,
+            'pets_allowed': False
+        }
         
-    #     url = detail_url(rulebook.rental_unit.id)
-    #     result = self.client.patch(url, payload)
+        url = detail_url(rulebook.rental_unit.id)
+        result = self.client.patch(url, payload)
         
-    #     self.assertEqual(result.status_code, status.HTTP_200_OK)
-    #     rulebook.refresh_from_db()
-    #     self.assertEqual(rulebook.min_notice, original_min_notice)
-    #     self.assertEqual(rulebook.min_stay, payload['min_stay'])
+        self.assertEqual(result.status_code, status.HTTP_200_OK)
+        rulebook.refresh_from_db()
+        self.assertEqual(rulebook.cancellation_policy, original_cancellation_policy)
+        self.assertEqual(rulebook.pets_allowed, payload['pets_allowed'])
         
-    # def test_full_update(self):
-    #     """test put of rulebook"""
-    #     rental_unit = create_rental_unit(user=self.user)
-    #     rulebook = Rulebook.objects.create(rental_unit=rental_unit)
+    def test_full_update(self):
+        """test put of rulebook"""
+        rental_unit = create_rental_unit(user=self.user)
+        rulebook = Rulebook.objects.create(rental_unit=rental_unit)
         
-    #     payload = {
-    #         'rental_unit': rulebook.rental_unit.id,
-    #         'min_stay': 7,
-    #         'max_stay': 8,
-    #         'min_notice': 30,
-    #         'max_notice': 31,
-    #         'prep_time': 48,
-    #         'instant_booking': False
-    #     }
-    #     url = detail_url(rulebook.rental_unit.id)
+        payload = {
+            'rental_unit': rulebook.rental_unit.id,
+            'cancellation_policy': 'Firm',
+            'house_rules': 'sample house rules, no jumping on the beds',
+            'pets_allowed': True,
+            'events_allowed': True,
+            'smoking_allowed': True,
+            'commercial_photo_film_allowed': True,
+            'guest_requirements': 'must be over 18 years old to book',
+            'laws_and_regulations': 'guns are not permitted'
+        }
+        url = detail_url(rulebook.rental_unit.id)
         
-    #     result = self.client.put(url, payload)
+        result = self.client.put(url, payload)
 
-    #     self.assertEqual(result.status_code, status.HTTP_200_OK)
-    #     rulebook.refresh_from_db()
-    #     flag = 0
-    #     for k, v in payload.items():
-    #         flag += 1
-    #         if flag == 1:
-    #             continue
-    #         self.assertEqual(getattr(rulebook, k), v)
+        self.assertEqual(result.status_code, status.HTTP_200_OK)
+        rulebook.refresh_from_db()
+        flag = 0
+        for k, v in payload.items():
+            flag += 1
+            if flag == 1:
+                continue
+            self.assertEqual(getattr(rulebook, k), v)
         
     def test_delete_rulebook(self):
         """test deleting a rulebook is successful"""
