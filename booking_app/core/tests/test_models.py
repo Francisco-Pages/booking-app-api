@@ -164,3 +164,11 @@ class ModelTest(TestCase):
         guidebook = models.Guidebook.objects.create(rental_unit=rental_unit)
         
         self.assertTrue(models.Guidebook.objects.filter(rental_unit=rental_unit).exists())
+        
+    def test_create_place(self):
+        """test creating a place"""
+        user = create_superuser(email='test@example.com', password='test1234')
+
+        place = models.Place.objects.create(user=user, name='El Shah de los Kebabs', category='Restaurant')
+        
+        self.assertTrue(models.Place.objects.filter(id=place.id).exists())

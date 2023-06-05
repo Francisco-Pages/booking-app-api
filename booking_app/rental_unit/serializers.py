@@ -13,7 +13,8 @@ from core.models import (
     Availability, 
     CalendarEvent,
     Rulebook,
-    Guidebook
+    Guidebook,
+    Place
 )
 
 
@@ -184,3 +185,14 @@ class GuidebookDetailSerializer(GuidebookSerializer):
     
     class Meta(GuidebookSerializer.Meta):
         fields = GuidebookSerializer.Meta.fields 
+        
+
+class PlaceSerializer(serializers.ModelSerializer):
+    """Serializer for a place"""
+
+    class Meta:
+        model = Place
+        fields = '__all__'
+        read_only_fields = ['id']
+
+

@@ -417,7 +417,9 @@ class Guidebook(models.Model):
     
     
 CATEGORY_CHOICES = (
-    
+    ('Restaurant', 'restaurant'),
+    ('Night Club', 'night club'),
+    ('Beach', 'beach')
 )
 
 class Place(models.Model):
@@ -429,10 +431,10 @@ class Place(models.Model):
     name = models.CharField(max_length=255, blank=False)
     category = models.CharField(max_length=255, choices=CATEGORY_CHOICES, blank=False)
     description = models.TextField(blank=True)
-    address1 = models.CharField(verbose_name="Address line 1", max_length=1024, blank=False)
-    address2 = models.CharField(verbose_name="Address line 2", max_length=1024, blank=False)
-    zip_code = models.CharField(verbose_name="ZIP / Postal code", max_length=12, blank=False)
-    city = models.CharField(verbose_name="City", max_length=1024, blank=False)
-    country = models.CharField(verbose_name="Country", max_length=3, blank=False)
+    address1 = models.CharField(verbose_name="Address line 1", max_length=1024, blank=True)
+    address2 = models.CharField(verbose_name="Address line 2", max_length=1024, blank=True)
+    zip_code = models.CharField(verbose_name="ZIP / Postal code", max_length=12, blank=True)
+    city = models.CharField(verbose_name="City", max_length=1024, blank=True)
+    country = models.CharField(verbose_name="Country", max_length=3, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, default=0, blank=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, default=0, blank=True)

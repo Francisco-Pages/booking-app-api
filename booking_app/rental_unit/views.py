@@ -18,7 +18,8 @@ from core.models import (
     Availability, 
     CalendarEvent,
     Rulebook,
-    Guidebook
+    Guidebook,
+    Place
 )
 from rental_unit import serializers
 
@@ -238,3 +239,15 @@ class GuidebookViewSet(viewsets.ModelViewSet):
         if self.action == 'list':
             return serializers.GuidebookSerializer
         return self.serializer_class
+    
+    
+class PlaceViewSet(viewsets.ModelViewSet):
+    """Manage places in the database"""
+    serializer_class = serializers.PlaceSerializer
+    queryset = Place.objects.all()
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    
+    def get_queryset(self):
+        """retrieve places for authenticated users"""
+        return self.queryset.all().order_by('-category') 
