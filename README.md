@@ -167,35 +167,10 @@ database design
         long term stays allowed
         luggage dropoff allowed
 
-    location
-        neighborhood description
-        getting around
-        location sharing
-        address (table)
-            ...
-            coordinates
-            ...
-    rooms and spaces(foreignkey, table: room type, room name, bed, couch, tv, bathroom type, shower type)
-        room type
-        room name
-        bed type
-        couch type
-        tv (yes or no)
-        bathroom type (half or full)
-        shower type (tub, regadera, jaccuzzi, outdoor)
+        instant book
 
-    accessibility - add accessibility descriptions table
-        entrance
-        entrance description
-        parking
-        parking description
-        adaptive equipment
-        adaptive equipment description
-        door width
-        door width description
-        stairs 
-
-    guest safety
+        safety
+    
         carbon monoxide alarm
         fire extinguisher
         first aid kit
@@ -214,6 +189,40 @@ database design
         no parking on property
         some spaces are shared
         weapons on property
+
+        accessibility - add accessibility descriptions table
+
+        entrance
+        entrance description
+        parking
+        parking description
+        adaptive equipment
+        adaptive equipment description
+        door width
+        door width description
+        stairs 
+
+
+    location
+        neighborhood description
+        getting around
+        location sharing
+        address (table)
+            ...
+            coordinates
+            ...
+    rooms and spaces(foreignkey, table: room type, room name, bed, couch, tv, bathroom type, shower type)
+        room type
+        room name
+        bed type
+        couch type
+        tv (yes or no)
+        bathroom type (half or full)
+        shower type (tub, regadera, jaccuzzi, outdoor)
+
+    
+
+    
 
     pricing
         night price
@@ -244,7 +253,6 @@ database design
 
     policies and rules
         cancellation policy
-        instant book
         house rules
         pets allowed
         events allowed
@@ -258,8 +266,8 @@ database design
 
     info for guests
         pre-booking details 
-            check in window
-            checkout time
+            check in window (add to availability model)
+            checkout time (add to availability model)
             guidebook 
                 name
                 type

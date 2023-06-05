@@ -1,6 +1,8 @@
 """
 Database models
 """
+from datetime import time
+
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import (
@@ -397,3 +399,40 @@ class Rulebook(models.Model):
     guest_requirements = models.TextField(blank=True)
     laws_and_regulations = models.TextField(blank=True)
     
+
+CHECK_IN_METHOD_CHOICES = (
+    
+) 
+    
+class Guidebook(models.Model):
+    """booking information for guests"""
+    rental_unit = models.OneToOneField(RentalUnit, primary_key=True, on_delete=models.CASCADE)
+    check_in_start_time = models.TimeField(auto_now=False, auto_now_add=False, default=time(hour=12, minute=0))
+    check_in_end_time = models.TimeField(auto_now=False, auto_now_add=False, default=time(hour=18, minute=0), null=True)
+    check_out_time = models.TimeField(auto_now=False, auto_now_add=False, default=time(hour=10, minute=0))
+    check_in_method = models.CharField(max_length=255, choices=CHECK_IN_METHOD_CHOICES, default='Someone will hand over the keys upon guest\'s arrival.')
+    check_in_instructions = models.TextField(blank=True)
+    places_of_interest = models.ManyToManyField('Place', blank=True)
+    house_manual = models.TextField(default='Details such as wifi name and password.', blank=True)
+    
+    
+CATEGORY_CHOICES = (
+    
+)
+
+class Place(models.Model):
+    """A place of interest"""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    name = models.CharField(max_length=255, blank=False)
+    category = models.CharField(max_length=255, choices=CATEGORY_CHOICES, blank=False)
+    description = models.TextField(blank=True)
+    address1 = models.CharField(verbose_name="Address line 1", max_length=1024, blank=False)
+    address2 = models.CharField(verbose_name="Address line 2", max_length=1024, blank=False)
+    zip_code = models.CharField(verbose_name="ZIP / Postal code", max_length=12, blank=False)
+    city = models.CharField(verbose_name="City", max_length=1024, blank=False)
+    country = models.CharField(verbose_name="Country", max_length=3, blank=False)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, default=0, blank=True)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, default=0, blank=True)
