@@ -412,7 +412,6 @@ class Guidebook(models.Model):
     check_out_time = models.TimeField(auto_now=False, auto_now_add=False, default=time(hour=10, minute=0))
     check_in_method = models.CharField(max_length=255, choices=CHECK_IN_METHOD_CHOICES, default='Someone will hand over the keys upon guest\'s arrival.')
     check_in_instructions = models.TextField(blank=True)
-    places_of_interest = models.ManyToManyField('Place', blank=True)
     house_manual = models.TextField(default='Details such as wifi name and password.', blank=True)
     
     
@@ -424,10 +423,7 @@ CATEGORY_CHOICES = (
 
 class Place(models.Model):
     """A place of interest"""
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-    )
+    rental_unit = models.ForeignKey(RentalUnit, on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=255, blank=False)
     category = models.CharField(max_length=255, choices=CATEGORY_CHOICES, blank=False)
     description = models.TextField(blank=True)

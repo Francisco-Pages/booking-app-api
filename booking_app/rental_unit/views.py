@@ -246,8 +246,14 @@ class PlaceViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.PlaceSerializer
     queryset = Place.objects.all()
     authentication_classes = [TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, permissions.DjangoModelPermissionsOrAnonReadOnly]
     
     def get_queryset(self):
         """retrieve places for authenticated users"""
-        return self.queryset.all().order_by('-category') 
+        return self.queryset.all().order_by('-rental_unit') 
+    
+    def get_serializer_class(self):
+        """returns serializer class for request"""
+        if self.action == 'list':
+            return serializers.PlaceSerializer
+        return self.serializer_class

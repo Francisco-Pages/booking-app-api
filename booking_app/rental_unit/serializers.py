@@ -170,7 +170,7 @@ class RulebookDetailSerializer(RulebookSerializer):
     class Meta(RulebookSerializer.Meta):
         fields = RulebookSerializer.Meta.fields 
         
-        
+         
 class GuidebookSerializer(serializers.ModelSerializer):
     """Serializer for Guidebook"""
     
@@ -178,8 +178,8 @@ class GuidebookSerializer(serializers.ModelSerializer):
         model = Guidebook
         fields = '__all__'
         # read_only_fields = ['rental_unit']
-
-
+    
+    
 class GuidebookDetailSerializer(GuidebookSerializer):
     """Serializer for guidebook detail view"""
     
@@ -196,3 +196,10 @@ class PlaceSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
 
+class PlaceDetailSerializer(PlaceSerializer):
+    """Serializer for Place detail view"""
+    
+    class Meta(PlaceSerializer.Meta):
+        fields = PlaceSerializer.Meta.fields        
+        
+        

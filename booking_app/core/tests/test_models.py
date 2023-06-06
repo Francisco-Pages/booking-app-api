@@ -154,7 +154,7 @@ class ModelTest(TestCase):
         
         rulebook = models.Rulebook.objects.create(rental_unit=rental_unit)
         
-        self.assertTrue(models.Rulebook.objects.filter(rental_unit=rental_unit).exists())
+        self.assertTrue(models.Rulebook.objects.filter(rental_unit=rulebook.rental_unit).exists())
         
     def test_create_guidebook(self):
         """test creating the guidebook for a rental unit"""
@@ -163,12 +163,13 @@ class ModelTest(TestCase):
         
         guidebook = models.Guidebook.objects.create(rental_unit=rental_unit)
         
-        self.assertTrue(models.Guidebook.objects.filter(rental_unit=rental_unit).exists())
+        self.assertTrue(models.Guidebook.objects.filter(rental_unit=guidebook.rental_unit).exists())
         
     def test_create_place(self):
         """test creating a place"""
         user = create_superuser(email='test@example.com', password='test1234')
+        rental_unit = models.RentalUnit.objects.create(user=user, title="a new home with availability preferences")
 
-        place = models.Place.objects.create(user=user, name='El Shah de los Kebabs', category='Restaurant')
+        place = models.Place.objects.create(rental_unit=rental_unit, name='El Shah de los Kebabs', category='Restaurant')
         
         self.assertTrue(models.Place.objects.filter(id=place.id).exists())

@@ -11,7 +11,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import RentalUnit, Guidebook
+from core.models import RentalUnit, Guidebook, Place
 
 from rental_unit.serializers import (
     GuidebookSerializer,
@@ -38,6 +38,7 @@ def create_rental_unit(user, **params):
     defaults.update(params)
 
     rental_unit = RentalUnit.objects.create(user=user, **defaults)
+    
     return rental_unit
 
 def create_guidebook(rental_unit_id, **params):
@@ -311,3 +312,4 @@ class AdminGuidebookApiTests(TestCase):
         
         self.assertEqual(result.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(Guidebook.objects.filter(rental_unit=guidebook.rental_unit.id).exists())
+   
