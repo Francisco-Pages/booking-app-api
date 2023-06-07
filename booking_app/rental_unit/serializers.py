@@ -22,17 +22,7 @@ class RentalUnitSerializer(serializers.ModelSerializer):
     """serializer for rental unit"""
     class Meta:
         model = RentalUnit
-        fields = [
-            'id', 
-            'title', 
-            'description', 
-            'link', 
-            'languages',
-            'status', 
-            'images', 
-            'unit_type', 
-            'max_guests',
-        ]
+        fields = '__all__'
         read_only_fields = ['id']
         
     

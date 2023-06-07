@@ -32,14 +32,14 @@ def get_rental_units_of_user(user):
     return [i for i in rental_units_of_user]
 
 class RentalUnitViewSet(viewsets.ModelViewSet):
-    """view for manage rental unit APIs"""
+    """view for manage the RentalUnit for the rental unit APIs"""
     serializer_class = serializers.RentalUnitDetailSerializer
     queryset = RentalUnit.objects.all()
     authentication_classes = [TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, permissions.DjangoModelPermissionsOrAnonReadOnly]
     
     def get_queryset(self):
-        """retrieve rental units for authenticated users"""
+        """retrieve RentalUnit for authenticated users"""
         return self.queryset.all().order_by('-id')
     
     def get_serializer_class(self):
@@ -47,37 +47,54 @@ class RentalUnitViewSet(viewsets.ModelViewSet):
         if self.action == 'list':
             return serializers.RentalUnitSerializer
         return self.serializer_class
+
+# class RentalUnitViewSet(viewsets.ModelViewSet):
+#     """view for manage rental unit APIs"""
+#     serializer_class = serializers.RentalUnitDetailSerializer
+#     queryset = RentalUnit.objects.all()
+#     authentication_classes = [TokenAuthentication]
+#     permission_classes = [permissions.IsAuthenticated]
     
-    def perform_create(self, serializer):
-        """create a new rental unit"""
-        user = self.request.user
+#     def get_queryset(self):
+#         """retrieve rental units for authenticated users"""
+#         return self.queryset.all().order_by('-id')
+    
+#     def get_serializer_class(self):
+#         """returns serializer class for request"""
+#         if self.action == 'list':
+#             return serializers.RentalUnitSerializer
+#         return self.serializer_class
+    
+#     def perform_create(self, serializer):
+#         """create a new rental unit"""
+#         user = self.request.user
         
-        if user.is_staff == False:
-            raise drf_serializers.ValidationError(
-                'Not authorized to create listings'
-            )
-        else:
-            serializer.save(user=user)
+#         if user.is_staff == False:
+#             raise drf_serializers.ValidationError(
+#                 'Not authorized to create listings'
+#             )
+#         else:
+#             serializer.save(user=user)
             
-    def perform_update(self, serializer):
-        user = self.request.user
+#     def perform_update(self, serializer):
+#         user = self.request.user
         
-        if user.is_staff == False:
-            raise drf_serializers.ValidationError(
-                'Not authorized to update listings'
-            )
-        else:
-            serializer.save(user=user)
+#         if user.is_staff == False:
+#             raise drf_serializers.ValidationError(
+#                 'Not authorized to update listings'
+#             )
+#         else:
+#             serializer.save(user=user)
     
-    def perform_destroy(self, instance):
-        user = self.request.user
+#     def perform_destroy(self, instance):
+#         user = self.request.user
         
-        if user.is_staff == False:
-            raise drf_serializers.ValidationError(
-                'Not authorized to delete listings'
-            )
-        else:
-            instance.delete()
+#         if user.is_staff == False:
+#             raise drf_serializers.ValidationError(
+#                 'Not authorized to delete listings'
+#             )
+#         else:
+#             instance.delete()
 
 class AmenitiesListViewSet(viewsets.ModelViewSet):
     """view for manage the amenities list for the rental unit APIs"""
