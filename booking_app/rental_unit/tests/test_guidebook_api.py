@@ -32,7 +32,7 @@ def create_rental_unit(user, **params):
         'title':'Title of property',
         'description':'A unique description of your home',
         'unit_type':'Apartment',
-        'status':'Inactive',
+        'status': False,
         'max_guests':1,
     }
     defaults.update(params)
@@ -169,47 +169,43 @@ class PrivateGuidebookApiTests(TestCase):
         self.assertEqual(guidebook.check_in_start_time, original_check_in_start_time)
         self.assertEqual(guidebook.check_out_time, original_check_out_time)
         
-    # def test_error_full_update(self):
-    #     """test error of put of guidebook"""
-    #     rental_unit = create_rental_unit(user=self.user)
+    def test_error_full_update(self):
+        """test error of put of guidebook"""
+        rental_unit = create_rental_unit(user=self.user)
         
-    #     original_values = {
-    #         'check_in_start_time': time(10, 0),
-    #         'check_in_end_time': time(16, 0),
-    #         'check_out_time': time(8, 0),
-    #         'check_in_method': 'not in person',
-    #         'check_in_instructions': 'follow the path and cross the pool over the alligator\'s mouth',
-    #         'places_of_interest': '',
-    #         'house_manual': 'wifi name is wifi123 and pasword is password123',
-    #     }
-    #     guidebook = create_guidebook(rental_unit_id=rental_unit, **original_values)
+        original_values = {
+            'check_in_start_time': time(10, 0),
+            'check_in_end_time': time(16, 0),
+            'check_out_time': time(8, 0),
+            'check_in_method': 'not in person',
+            'check_in_instructions': 'follow the path and cross the pool over the alligator\'s mouth',
+            'check_out_instructions': 'please leave keys at the kitchen top',
+            'house_manual': 'wifi name is wifi123 and pasword is password123',
+        }
+        guidebook = create_guidebook(rental_unit_id=rental_unit, **original_values)
         
-    #     payload = {
-    #         'check_in_start_time': time(12, 0),
-    #         'check_in_end_time': time(18, 0),
-    #         'check_out_time': time(10, 0),
-    #         'check_in_method': 'in person',
-    #         'check_in_instructions': 'follow the path and cross the pool',
-    #         'places_of_interest': {
-    #             'user': self.user,
-    #             'name': 'Punto Italia',
-    #             'category': 'Restaurant'
-    #         },
-    #         'house_manual': 'wifi name is wifi and pasword is password',
-    #     }
+        payload = {
+            'check_in_start_time': time(12, 0),
+            'check_in_end_time': time(18, 0),
+            'check_out_time': time(10, 0),
+            'check_in_method': 'in person',
+            'check_in_instructions': 'follow the path and cross the pool',
+            'check_out_instructions': 'please leave keys inside the crocodile\'s mouth',
+            'house_manual': 'wifi name is wifi and pasword is password',
+        }
         
-    #     url = detail_url(guidebook.rental_unit.id)
+        url = detail_url(guidebook.rental_unit.id)
         
-    #     result = self.client.put(url, payload)
+        result = self.client.put(url, payload)
 
-    #     self.assertEqual(result.status_code, status.HTTP_403_FORBIDDEN)
-    #     guidebook.refresh_from_db()
-    #     flag = 0
-    #     for k, v in original_values.items():
-    #         flag += 1
-    #         if flag == 1:
-    #             continue
-    #         self.assertEqual(getattr(guidebook, k), v)
+        self.assertEqual(result.status_code, status.HTTP_403_FORBIDDEN)
+        guidebook.refresh_from_db()
+        flag = 0
+        for k, v in original_values.items():
+            flag += 1
+            if flag == 1:
+                continue
+            self.assertEqual(getattr(guidebook, k), v)
 
     def test_error_delete_guidebook(self):
         """test error deleting a guidebook by a non administrator"""
@@ -270,37 +266,33 @@ class AdminGuidebookApiTests(TestCase):
         self.assertEqual(guidebook.check_in_start_time, original_check_in_start_time)
         self.assertEqual(guidebook.check_out_time, payload['check_out_time'])
         
-    # def test_full_update(self):
-    #     """test put of guidebook"""
-    #     rental_unit = create_rental_unit(user=self.user)
-    #     guidebook = Guidebook.objects.create(rental_unit=rental_unit)
+    def test_full_update(self):
+        """test put of guidebook"""
+        rental_unit = create_rental_unit(user=self.user)
+        guidebook = Guidebook.objects.create(rental_unit=rental_unit)
         
-    #     payload = {
-    #         'rental_unit': rental_unit.id,
-    #         'check_in_start_time': time(12, 0),
-    #         'check_in_end_time': time(18, 0),
-    #         'check_out_time': time(10, 0),
-    #         'check_in_method': 'in person',
-    #         'check_in_instructions': 'follow the path and cross the pool',
-    #         'places_of_interest': {
-    #             'user': self.user,
-    #             'name': 'Punto Italia',
-    #             'category': 'Restaurant'
-    #         },
-    #         'house_manual': 'wifi name is wifi and pasword is password',
-    #     }
-    #     url = detail_url(guidebook.rental_unit.id)
+        payload = {
+            'rental_unit': rental_unit.id,
+            'check_in_start_time': time(12, 0),
+            'check_in_end_time': time(18, 0),
+            'check_out_time': time(10, 0),
+            'check_in_method': 'Lockbox',
+            'check_in_instructions': 'follow the path and cross the pool',
+            'check_out_instructions': 'leave the keys on the kitchen counter',
+            'house_manual': 'wifi name is wifi and pasword is password',
+        }
+        url = detail_url(guidebook.rental_unit.id)
         
-    #     result = self.client.put(url, payload)
+        result = self.client.put(url, payload)
 
-    #     self.assertEqual(result.status_code, status.HTTP_200_OK)
-    #     guidebook.refresh_from_db()
-    #     flag = 0
-    #     for k, v in payload.items():
-    #         flag += 1
-    #         if flag == 1:
-    #             continue
-    #         self.assertEqual(getattr(guidebook, k), v)
+        self.assertEqual(result.status_code, status.HTTP_200_OK)
+        guidebook.refresh_from_db()
+        flag = 0
+        for k, v in payload.items():
+            flag += 1
+            if flag == 1:
+                continue
+            self.assertEqual(getattr(guidebook, k), v)
         
     def test_delete_guidebook(self):
         """test deleting a guidebook is successful"""

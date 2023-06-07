@@ -71,15 +71,6 @@ class RentalUnit(models.Model):
     images = models.CharField(max_length=255, blank=True)
     unit_type = models.CharField(max_length=30, choices=UNIT_CHOICES, default='hotel')
     max_guests = models.IntegerField(default=1)
-    # amenities = models.OneToOneField("Amenities", null=True, on_delete=models.CASCADE)
-    # location = models.OneToOneField("DetailedLocation", null=True, on_delete=models.CASCADE)
-    # rooms_and_spaces = models.ForeignKey()
-    # accessibility = models.ForeignKey()
-    # guest_safety = models.ForeignKey()
-    # pricing = models.ForeignKey()
-    # calendar = models.ForeignKey()
-    # policies_and_rules = ForeignKey()
-    # information_for_guests = ForeignKey() 
     
     def __str__(self):
         return self.title

@@ -32,7 +32,7 @@ def create_rental_unit(user, **params):
         'title':'Title of property',
         'description':'A unique description of your home',
         'unit_type':'apartment',
-        'status':'inactive',
+        'status': False,
         'max_guests':1,
     }
     defaults.update(params)
@@ -157,7 +157,7 @@ class PrivateRentalUnitApiTests(TestCase):
             'description': 'NEW A unique description of your home',
             'link': 'https://example.com/new-rental-unit.pdf',
             'languages': 'vi',
-            'status': 'Active',
+            'status': True,
             'images': 'NEW images',
             'unit_type': 'Hotel',
             'max_guests': 1,
@@ -251,7 +251,7 @@ class AdminRentalUnitApiTests(TestCase):
             'description': 'NEW A unique description of your home',
             'link': 'https://example.com/new-rental-unit.pdf',
             'languages': 'vi',
-            'status': 'Active',
+            'status': True,
             'images': 'NEW images',
             'unit_type': 'Hotel',
             'max_guests': 1,

@@ -72,7 +72,7 @@ class ModelTest(TestCase):
             description='new home for rent - testing',
             link='https://www.rental-unit.com/',
             languages='fra',
-            status='inactive',
+            status=False,
             images='images of don pedro',
             unit_type='apartment',
             max_guests=6,

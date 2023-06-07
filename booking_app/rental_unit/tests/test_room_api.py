@@ -30,7 +30,7 @@ def create_rental_unit(user, **params):
         'title':'Title of property',
         'description':'A unique description of your home',
         'unit_type':'Apartment',
-        'status':'Inactive',
+        'status':False,
         'max_guests':1,
     }
     defaults.update(params)
@@ -159,7 +159,6 @@ class PrivateRoomApiTests(TestCase):
             room_type='half bathroom',
             bed_type='',
             tv=True,
-            shower_type='jaccuzzi',
             accessible= False,
         )
         
@@ -169,7 +168,6 @@ class PrivateRoomApiTests(TestCase):
             'room_type': 'bathroom',
             'bed_type': '',
             'tv': True,
-            'shower_type': '',
             'accessible': False,
         }
         url = detail_url(room.rental_unit.id)
@@ -252,10 +250,9 @@ class AdminRoomApiTests(TestCase):
         payload = {
             'rental_unit': room.rental_unit.id,
             'name': 'new name',
-            'room_type': 'bathroom',
-            'bed_type': '',
+            'room_type': 'Bedroom',
+            'bed_type': 'King',
             'tv': True,
-            'shower_type': '',
             'accessible': False,
         }
         url = detail_url(room.rental_unit.id)

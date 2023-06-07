@@ -32,7 +32,7 @@ def create_rental_unit(user, **params):
         'title':'Title of property',
         'description':'A unique description of your home',
         'unit_type':'Apartment',
-        'status':'Inactive',
+        'status': False,
         'max_guests':1,
     }
     defaults.update(params)
