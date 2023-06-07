@@ -53,11 +53,8 @@ UNIT_CHOICES = (
     ('House', 'house'),
     ('Room', 'room'),
     ('Trailer', 'trailer'),
-    ('Igloo', 'igloo')
-)
-STATUS_CHOICES = (
-    ('Active', 'active'),
-    ('Inactive', 'inactive')
+    ('Igloo', 'igloo'),
+    ('Villa', 'villa'),
 )
     
 class RentalUnit(models.Model):
@@ -70,7 +67,7 @@ class RentalUnit(models.Model):
     description = models.TextField(blank=True)
     link = models.CharField(max_length=255, blank=True)
     languages = models.CharField(max_length=255, default='en,')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='inactive')
+    status = models.BooleanField(default=False)
     images = models.CharField(max_length=255, blank=True)
     unit_type = models.CharField(max_length=30, choices=UNIT_CHOICES, default='hotel')
     max_guests = models.IntegerField(default=1)
@@ -239,7 +236,7 @@ class Location(models.Model):
     """Location details of a rental unit"""
     rental_unit = models.OneToOneField(RentalUnit, primary_key=True, on_delete=models.CASCADE)
     neighborhood_description = models.TextField(default="Describe the neighborhood of your place.")
-    getting_around = models.TextField(default="Any tips about how to reach your place or interesting things around.")
+    getting_around = models.TextField(default="Any tips about how to reach your place.")
     location_sharing = models.BooleanField(default=False)
     address1 = models.CharField(verbose_name="Address line 1", max_length=1024, blank=True)
     address2 = models.CharField(verbose_name="Address line 2",max_length=1024, blank=True)
@@ -253,17 +250,26 @@ class Location(models.Model):
         return f"Location for rental unit #{self.rental_unit.id}."
     
 ROOM_TYPE_CHOICES = (
-    
+    ('Bedroom', 'bedroom'),
+    ('Living room', 'living room'),
+    ('Game room', 'game room'),
+    ('Family room', 'family room'),
+    ('Studio', 'studio'),
+    ('Office', 'office'),
+    ('Bathroom (full)', 'bathroom (full)'),
+    ('Bathroom (half)', 'bathroom (half)'),
+    ('Loft', 'loft'),
+    ('Basement', 'basement'),
 )
 BED_TYPE_CHOICES = (
-    
+    ('King', 'king'),
+    ('Queen', 'queen'),
+    ('Full', 'Full'),
+    ('Twin', 'twin'),
+    ('Single', 'single'),
+    ('Crib', 'crib'),
 )
-BATHROOM_TYPE_CHOICES = (
-    
-)
-SHOWER_TYPE_CHOICES = (
-    
-)
+
 
 class Room(models.Model):
     """a room or space in a rental unit"""
@@ -272,7 +278,6 @@ class Room(models.Model):
     room_type = models.CharField(max_length=20,choices=ROOM_TYPE_CHOICES, blank=True)
     bed_type = models.CharField(max_length=20,choices=BED_TYPE_CHOICES, blank=True)
     tv = models.BooleanField(default=False)
-    shower_type = models.CharField(max_length=20,choices=SHOWER_TYPE_CHOICES, blank=True)
     accessible = models.BooleanField(default=False)
     
 CURRENCY_CHOICES = (
@@ -291,7 +296,6 @@ class Pricing(models.Model):
     currency = models.CharField(max_length=30, choices=CURRENCY_CHOICES, default='USD')
     week_discount = models.IntegerField(default=0)
     month_discount = models.IntegerField(default=0)
-    # fees = models.ForeignKey("Fee", on_delete=models.CASCADE, blank=True)
     tax = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     
 FEE_CHOICES = (
@@ -401,7 +405,11 @@ class Rulebook(models.Model):
     
 
 CHECK_IN_METHOD_CHOICES = (
-    
+    ('Smart lock', 'smart lock'),
+    ('Keypad', 'keypad'),
+    ('Lockbox', 'lockbox'),
+    ('Building Staff', 'Building staff'),
+    ('Host greets you', 'host greets you'),
 ) 
     
 class Guidebook(models.Model):
@@ -410,9 +418,10 @@ class Guidebook(models.Model):
     check_in_start_time = models.TimeField(auto_now=False, auto_now_add=False, default=time(hour=12, minute=0))
     check_in_end_time = models.TimeField(auto_now=False, auto_now_add=False, default=time(hour=18, minute=0), null=True)
     check_out_time = models.TimeField(auto_now=False, auto_now_add=False, default=time(hour=10, minute=0))
-    check_in_method = models.CharField(max_length=255, choices=CHECK_IN_METHOD_CHOICES, default='Someone will hand over the keys upon guest\'s arrival.')
+    check_in_method = models.CharField(max_length=255, choices=CHECK_IN_METHOD_CHOICES, default='Host greets you')
     check_in_instructions = models.TextField(blank=True)
-    house_manual = models.TextField(default='Details such as wifi name and password.', blank=True)
+    check_out_instructions = models.TextField(blank=True)
+    house_manual = models.TextField(default='Tell your guests about how things work at your place.', blank=True)
     
     
 CATEGORY_CHOICES = (
