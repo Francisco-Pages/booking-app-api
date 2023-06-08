@@ -1,6 +1,8 @@
 """
 Tests for models
 """
+from datetime import date, timezone
+
 from decimal import Decimal
 
 from django.test import TestCase
@@ -173,3 +175,19 @@ class ModelTest(TestCase):
         place = models.Place.objects.create(rental_unit=rental_unit, name='El Shah de los Kebabs', category='Restaurant')
         
         self.assertTrue(models.Place.objects.filter(id=place.id).exists())
+        
+    def test_create_reservation(self):
+        """test creating a reservation"""
+        host = create_superuser(email='test@example.com', password='test1234')
+        rental_unit = models.RentalUnit.objects.create(user=host, title="a new home for rent")
+        guest = create_user(email='guest@example.com', password='password123')
+        
+        reservation = models.Reservation.objects.create(
+            rental_unit=rental_unit, 
+            user=guest,
+            check_in=date(2023,6,20),
+            check_out=date(2023,6,28)
+        )
+        
+        self.assertTrue(models.Reservation.objects.filter(id=reservation.id).exists())
+        

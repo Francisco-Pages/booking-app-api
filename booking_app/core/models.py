@@ -434,3 +434,15 @@ class Place(models.Model):
     country = models.CharField(verbose_name="Country", max_length=3, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, default=0, blank=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, default=0, blank=True)
+    
+
+class Reservation(models.Model):
+    """a reservation made by a guest for a rental unit"""
+    rental_unit = models.ForeignKey(RentalUnit, on_delete=models.CASCADE, null=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    check_in = models.DateField()
+    check_out = models.DateField()
+    
