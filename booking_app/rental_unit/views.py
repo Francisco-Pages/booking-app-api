@@ -19,7 +19,8 @@ from core.models import (
     CalendarEvent,
     Rulebook,
     Guidebook,
-    Place
+    Place,
+    Reservation
 )
 from rental_unit import serializers
 
@@ -273,4 +274,22 @@ class PlaceViewSet(viewsets.ModelViewSet):
         """returns serializer class for request"""
         if self.action == 'list':
             return serializers.PlaceSerializer
+        return self.serializer_class
+    
+    
+class ReservationViewSet(viewsets.ModelViewSet):
+    """view for manage Reservation for the rental unit APIs"""
+    serializer_class = serializers.ReservationDetailSerializer
+    queryset = Reservation.objects.all()
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        """retrieve Reservation for authenticated users"""
+        return self.queryset.all().order_by('-rental_unit')   
+    
+    def get_serializer_class(self):
+        """returns serializer class for request"""
+        if self.action == 'list':
+            return serializers.ReservationSerializer
         return self.serializer_class

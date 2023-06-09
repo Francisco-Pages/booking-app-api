@@ -14,7 +14,8 @@ from core.models import (
     CalendarEvent,
     Rulebook,
     Guidebook,
-    Place
+    Place,
+    Reservation
 )
 
 
@@ -193,3 +194,17 @@ class PlaceDetailSerializer(PlaceSerializer):
         fields = PlaceSerializer.Meta.fields        
         
         
+class ReservationSerializer(serializers.ModelSerializer):
+    """Serializer for a Reservation"""
+
+    class Meta:
+        model = Reservation
+        fields = '__all__'
+        read_only_fields = ['id']
+
+
+class ReservationDetailSerializer(ReservationSerializer):
+    """Serializer for Reservation detail view"""
+    
+    class Meta(ReservationSerializer.Meta):
+        fields = ReservationSerializer.Meta.fields        
