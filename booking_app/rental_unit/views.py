@@ -286,7 +286,9 @@ class ReservationViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         """retrieve Reservation for authenticated users"""
-        return self.queryset.all().order_by('-rental_unit')   
+        return self.queryset.filter(
+            user=self.request.user
+        ).order_by('-id')   
     
     def get_serializer_class(self):
         """returns serializer class for request"""

@@ -2,7 +2,7 @@
 tests for calendar_event API
 """
 from decimal import Decimal
-from datetime import datetime, timezone
+from datetime import date
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -120,7 +120,7 @@ class PrivateCalendarEventApiTests(TestCase):
         payload = {
             'rental_unit': rental_unit.id,
             'reason': 'Reservation',
-            'start_date': "2023-06-28T12:38:30.756209Z",
+            'start_date': "2023-06-28",
             'notes': f'reservation for unit #{rental_unit.id}'
         }
         
@@ -159,8 +159,8 @@ class PrivateCalendarEventApiTests(TestCase):
         """test error put of calendar_event by non admin"""
         rental_unit = create_rental_unit(user=self.user)
         original_reason = 'Blocked'
-        original_start = '2023-06-28T12:38:30.756209Z'
-        original_end = '2023-07-4T12:38:30.756209Z'
+        original_start = '2023-06-28'
+        original_end = '2023-07-4'
         original_notes = f"reservation for rental unit #{rental_unit.id}"
         
         
@@ -175,8 +175,8 @@ class PrivateCalendarEventApiTests(TestCase):
         payload = {
             'id': calendar_event.id,
             'reason': 'Reservation',
-            'start_date': datetime(2023,6,20,12,38,30, tzinfo=timezone.utc),
-            'end_date': datetime(2023,6,27,12,38,30, tzinfo=timezone.utc),
+            'start_date': date(2023,6,20),
+            'end_date': date(2023,6,27),
             'notes': f'reservation updated for unit #{rental_unit.id}'
         }
         
@@ -219,7 +219,7 @@ class AdminCalendarEventApiTests(TestCase):
         payload = {
             'rental_unit': rental_unit.id,
             'reason': 'Reservation',
-            'start_date': "2023-06-28T12:38:30.756209Z",
+            'start_date': "2023-06-28",
             'notes': f'reservation for unit #{rental_unit.id}'
         }
         result = self.client.post(CALENDAR_EVENT_URL, payload)
@@ -277,8 +277,8 @@ class AdminCalendarEventApiTests(TestCase):
         """test put of calendar_event"""
         rental_unit = create_rental_unit(user=self.user)
         original_reason = 'Blocked'
-        original_start = '2023-06-28T12:38:30.756209Z'
-        original_end = '2023-07-4T12:38:30.756209Z'
+        original_start = '2023-06-28'
+        original_end = '2023-07-4'
         original_notes = f"reservation for rental unit #{rental_unit.id}"
         
         
@@ -293,8 +293,8 @@ class AdminCalendarEventApiTests(TestCase):
         payload = {
             'id': calendar_event.id,
             'reason': 'Reservation',
-            'start_date': datetime(2023,6,20,12,38,30, tzinfo=timezone.utc),
-            'end_date': datetime(2023,6,27,12,38,30, tzinfo=timezone.utc),
+            'start_date': date(2023,6,20),
+            'end_date': date(2023,6,27),
             'notes': f'reservation updated for unit #{rental_unit.id}'
         }
         

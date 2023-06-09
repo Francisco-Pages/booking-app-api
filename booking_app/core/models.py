@@ -366,8 +366,8 @@ class CalendarEvent(models.Model):
     """a log of an event happening in a rental unit"""
     rental_unit = models.ForeignKey(RentalUnit, on_delete=models.CASCADE, null=True)
     reason = models.CharField(max_length=50, choices=EVENT_CHOICES, blank=False)
-    start_date = models.DateTimeField(blank=True, null=True)
-    end_date = models.DateTimeField(blank=True, null=True)
+    start_date = models.DateField(blank=True, null=True)
+    end_date = models.DateField(blank=True, null=True)
     creation_date = models.DateTimeField(auto_now_add=True)
     notes = models.TextField(blank=True)
 
@@ -445,4 +445,5 @@ class Reservation(models.Model):
     )
     check_in = models.DateField()
     check_out = models.DateField()
+    creation_date = models.DateTimeField(auto_now_add=True)
     

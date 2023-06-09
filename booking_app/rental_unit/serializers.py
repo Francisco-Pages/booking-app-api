@@ -201,7 +201,31 @@ class ReservationSerializer(serializers.ModelSerializer):
         model = Reservation
         fields = '__all__'
         read_only_fields = ['id']
+        
+    def validate(self, data):
+        """check that check in date is not on or before check out date"""
+        if data['check_in'] >= data['check_out']:
+            raise serializers.ValidationError('Check in date cannot be on or before check out date, please choose another date.')
+        
+        """check that a new reservation does not overlap with an existing reservation"""
+        reservaton_list = Reservation.objects.filter(rental_unit=data['rental_unit'])
+        for reservation in reservaton_list:
+            if data['check_in'] < reservation.check_out and data['check_in'] >= reservation.check_in or \
+                data['check_out'] <= reservation.check_out and data['check_out'] > reservation.check_in or \
+                data['check_in'] <= reservation.check_in and data['check_out'] >= reservation.check_out:
+                
+                raise serializers.ValidationError(f'Sorry, the dates you have chosen are not available, there is another reservation from {reservation.check_in} to {reservation.check_out}')
+        
+        """check that the the dates chosen for a reservation are not blocked"""
+        calendar_event_list = CalendarEvent.objects.filter(rental_unit=data['rental_unit'])
+        for event in calendar_event_list:
+            if data['check_in'] < event.end_date and data['check_in'] >= event.start_date or \
+                data['check_out'] <= event.end_date and data['check_out'] > event.start_date or \
+                data['check_in'] <= event.start_date and data['check_out'] >= event.end_date:
 
+                raise serializers.ValidationError(f'Sorry, the dates you have chosen are not available, there is another reservation from {event.start_date} to {event.end_date}')
+
+        return data
 
 class ReservationDetailSerializer(ReservationSerializer):
     """Serializer for Reservation detail view"""
