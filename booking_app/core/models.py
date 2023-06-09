@@ -349,10 +349,10 @@ class Availability(models.Model):
     )
     prep_time = models.IntegerField(
         validators=[
-            MinValueValidator(1),
-            MaxValueValidator(72)
+            MinValueValidator(0),
+            MaxValueValidator(5)
         ],
-        default=72
+        default=0
     )
     instant_booking = models.BooleanField(default=False)
 

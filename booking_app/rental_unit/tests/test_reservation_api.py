@@ -11,7 +11,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import RentalUnit, Reservation, CalendarEvent
+from core.models import RentalUnit, Reservation, CalendarEvent, Availability
 
 from rental_unit.serializers import (
     ReservationSerializer,
@@ -85,14 +85,10 @@ class PrivateReservationApiTests(TestCase):
     def test_create_reservation(self):
         """test a user creating a reservation"""
         rental_unit = create_rental_unit(user=self.user)
-        guest = create_user(
-            email='guest@example.com',
-            password='pass1234'
-        )
-        
+        availability = Availability.objects.create(rental_unit=rental_unit)
         payload = {
             'rental_unit': rental_unit.id,
-            'user': guest.id,
+            'user': self.user.id,
             'check_in': date(2023, 8, 24),
             'check_out': date(2023, 8, 30)
         }
@@ -111,6 +107,10 @@ class PrivateReservationApiTests(TestCase):
         rental_unit = create_rental_unit(user=self.user)
         rental_unit_two = create_rental_unit(user=self.user)
         rental_unit_three = create_rental_unit(user=self.user)
+        availability = Availability.objects.create(rental_unit=rental_unit)
+        availability_two = Availability.objects.create(rental_unit=rental_unit_two)
+        availability_three = Availability.objects.create(rental_unit=rental_unit_three)
+
         
         guest = create_user(
             email='guest1@example.com',
@@ -134,6 +134,7 @@ class PrivateReservationApiTests(TestCase):
     def test_get_reservation_detail(self):
         """test get reservation detail"""
         rental_unit = create_rental_unit(user=self.user)
+        availability = Availability.objects.create(rental_unit=rental_unit)
         reservation = create_reservation(user_id=self.user, rental_unit_id=rental_unit)
         
         url = detail_url(reservation.id)
@@ -145,7 +146,8 @@ class PrivateReservationApiTests(TestCase):
     def test_error_get_other_user_reservation_detail(self):
         """test error if getting another user's reservation detail"""
         rental_unit = create_rental_unit(user=self.user)
-
+        availability = Availability.objects.create(rental_unit=rental_unit)
+        
         other_user = create_user(
             email='testother@example.com',
             password='pass1234'
@@ -160,6 +162,7 @@ class PrivateReservationApiTests(TestCase):
     def test_error_check_out_before_check_in(self):
         """test an error if a ckeck out date for a reservation is before check in date"""
         rental_unit = create_rental_unit(user=self.user)
+        availability = Availability.objects.create(rental_unit=rental_unit)
         
         payload = {
             'rental_unit': rental_unit.id,
@@ -181,6 +184,7 @@ class PrivateReservationApiTests(TestCase):
     def test_error_create_double_reservation(self):
         """test error when two or more reservations dates are not unique"""
         rental_unit = create_rental_unit(user=self.user)
+        availability = Availability.objects.create(rental_unit=rental_unit)
         
         payload_one = {
             'rental_unit': rental_unit.id,
@@ -222,6 +226,7 @@ class PrivateReservationApiTests(TestCase):
             start_date=date(2023, 8, 2),
             end_date=date(2023, 8, 6)
         )
+        availability = Availability.objects.create(rental_unit=rental_unit)
         
         payload = {
             'rental_unit': rental_unit.id,
@@ -240,3 +245,102 @@ class PrivateReservationApiTests(TestCase):
             check_out=payload['check_out']
         ).exists())
         
+    def test_error_reservation_too_short(self):
+        """check that a reservation length is not shorter than minimum stay"""
+        rental_unit = create_rental_unit(user=self.user)
+        availability = Availability.objects.create(
+            rental_unit=rental_unit,
+            min_stay=2
+        )
+        
+        payload = {
+            'rental_unit': rental_unit.id,
+            'user': self.user.id,
+            'check_in': date(2023, 8, 2),
+            'check_out': date(2023, 8, 3)
+        }
+        
+        result = self.client.post(RESERVATION_URL, payload)
+        
+        self.assertEqual(result.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(Reservation.objects.filter(
+            rental_unit=payload['rental_unit'], 
+            user=payload['user'],
+            check_in=payload['check_in'],
+            check_out=payload['check_out']
+        ).exists())
+        
+    def test_error_reservation_too_long(self):
+        """check that a reservation length is not greater than maximum stay"""
+        rental_unit = create_rental_unit(user=self.user)
+        availability = Availability.objects.create(
+            rental_unit=rental_unit,
+            max_stay=20
+        )
+        
+        payload = {
+            'rental_unit': rental_unit.id,
+            'user': self.user.id,
+            'check_in': date(2023, 8, 2),
+            'check_out': date(2023, 8, 30),
+        }
+        
+        result = self.client.post(RESERVATION_URL, payload)
+        
+        self.assertEqual(result.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(Reservation.objects.filter(
+            rental_unit=payload['rental_unit'], 
+            user=payload['user'],
+            check_in=payload['check_in'],
+            check_out=payload['check_out']
+        ).exists())
+        
+    def test_error_reservation_made_too_late(self):
+        """test error when creating a reservation after min notice"""
+        rental_unit = create_rental_unit(user=self.user)
+        availability = Availability.objects.create(
+            rental_unit=rental_unit,
+            min_notice=5
+        )
+        
+        payload = {
+            'rental_unit': rental_unit.id,
+            'user': self.user.id,
+            'check_in': date(2023, 6, 11),
+            'check_out': date(2023, 6, 15),
+        }
+        
+        result = self.client.post(RESERVATION_URL, payload)
+
+        self.assertEqual(result.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(Reservation.objects.filter(
+            rental_unit=payload['rental_unit'], 
+            user=payload['user'],
+            check_in=payload['check_in'],
+            check_out=payload['check_out']
+        ).exists())
+        
+    def test_error_reservation_made_too_early(self):
+        """test error when creating a reservation before max notice"""
+        rental_unit = create_rental_unit(user=self.user)
+        availability = Availability.objects.create(
+            rental_unit=rental_unit,
+            max_notice=365
+        )
+        
+        payload = {
+            'rental_unit': rental_unit.id,
+            'user': self.user.id,
+            'check_in': date(2024, 6, 11),
+            'check_out': date(2024, 6, 15),
+        }
+        
+        result = self.client.post(RESERVATION_URL, payload)
+        print(result.content)
+        self.assertEqual(result.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(Reservation.objects.filter(
+            rental_unit=payload['rental_unit'], 
+            user=payload['user'],
+            check_in=payload['check_in'],
+            check_out=payload['check_out']
+        ).exists())

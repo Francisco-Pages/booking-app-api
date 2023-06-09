@@ -2,6 +2,7 @@
 serializers for rental unit API
 """
 from rest_framework import serializers
+from datetime import datetime, timedelta
 
 from core.models import (
     RentalUnit, 
@@ -209,9 +210,12 @@ class ReservationSerializer(serializers.ModelSerializer):
         
         """check that a new reservation does not overlap with an existing reservation"""
         reservaton_list = Reservation.objects.filter(rental_unit=data['rental_unit'])
+        availability = Availability.objects.get(rental_unit=data['rental_unit'])
+        prep = timedelta(days=availability.prep_time)
+        
         for reservation in reservaton_list:
-            if data['check_in'] < reservation.check_out and data['check_in'] >= reservation.check_in or \
-                data['check_out'] <= reservation.check_out and data['check_out'] > reservation.check_in or \
+            if data['check_in'] < reservation.check_out + prep and data['check_in'] >= reservation.check_in or \
+                data['check_out'] <= reservation.check_out and data['check_out'] > reservation.check_in + prep or \
                 data['check_in'] <= reservation.check_in and data['check_out'] >= reservation.check_out:
                 
                 raise serializers.ValidationError(f'Sorry, the dates you have chosen are not available, there is another reservation from {reservation.check_in} to {reservation.check_out}')
@@ -219,12 +223,27 @@ class ReservationSerializer(serializers.ModelSerializer):
         """check that the the dates chosen for a reservation are not blocked"""
         calendar_event_list = CalendarEvent.objects.filter(rental_unit=data['rental_unit'])
         for event in calendar_event_list:
-            if data['check_in'] < event.end_date and data['check_in'] >= event.start_date or \
-                data['check_out'] <= event.end_date and data['check_out'] > event.start_date or \
+            if data['check_in'] < event.end_date + prep and data['check_in'] >= event.start_date or \
+                data['check_out'] <= event.end_date and data['check_out'] > event.start_date + prep or \
                 data['check_in'] <= event.start_date and data['check_out'] >= event.end_date:
 
                 raise serializers.ValidationError(f'Sorry, the dates you have chosen are not available, there is another reservation from {event.start_date} to {event.end_date}')
 
+        """check that the reservation length is within the boundaries set by the rental unit owner"""
+        availability = Availability.objects.get(rental_unit=data['rental_unit'])
+        delta = data['check_out'] - data['check_in']
+        if delta.days < availability.min_stay:
+            raise serializers.ValidationError(f'Reservation must be longer than {availability.min_stay}')
+        if delta.days > availability.max_stay:
+            raise serializers.ValidationError(f'Reservation must be shorter than {availability.max_stay}') 
+        
+        """check that a reservation is made within the notice boundaries set by the rental unit owner"""
+        delta = data['check_in'] - datetime.now().date()
+        if delta.days < availability.min_notice:
+            raise serializers.ValidationError(f'Reservation must be made at least {availability.min_notice} days before check in date.')
+        if delta.days > availability.max_notice:
+            raise serializers.ValidationError(f'Reservation must be made at most {availability.max_notice} days before check in date.')
+        
         return data
 
 class ReservationDetailSerializer(ReservationSerializer):
