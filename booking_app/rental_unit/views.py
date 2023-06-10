@@ -295,3 +295,23 @@ class ReservationViewSet(viewsets.ModelViewSet):
         if self.action == 'list':
             return serializers.ReservationSerializer
         return self.serializer_class
+    
+    def perform_update(self, serializer):
+        user = self.request.user
+        
+        if user.is_staff == False:
+            raise drf_serializers.ValidationError(
+                'Not authorized to update this reservation'
+            )
+        else:
+            serializer.save()
+    
+    def perform_destroy(self, instance):
+        user = self.request.user
+        
+        if user.is_staff == False:
+            raise drf_serializers.ValidationError(
+                'Not authorized to delete a reservation'
+            )
+        else:
+            instance.delete()

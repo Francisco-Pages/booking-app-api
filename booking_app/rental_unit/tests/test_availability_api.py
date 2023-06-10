@@ -275,7 +275,7 @@ class AdminAvailabilityApiTests(TestCase):
             'max_stay': 8,
             'min_notice': 30,
             'max_notice': 31,
-            'prep_time': 48,
+            'prep_time': 2,
             'instant_booking': False
         }
         url = detail_url(availability.rental_unit.id)

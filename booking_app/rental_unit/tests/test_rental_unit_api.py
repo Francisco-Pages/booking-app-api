@@ -258,7 +258,7 @@ class AdminRentalUnitApiTests(TestCase):
         }
         url = detail_url(rental_unit.id)
         result = self.client.put(url, payload)
-        (print(result.content))
+        
         self.assertEqual(result.status_code, status.HTTP_200_OK)
         
     def test_delete_rental_unit(self):

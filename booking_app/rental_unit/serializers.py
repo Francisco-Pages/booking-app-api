@@ -245,6 +245,21 @@ class ReservationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(f'Reservation must be made at most {availability.max_notice} days before check in date.')
         
         return data
+    
+    def create(self, validated_data):
+        """create a reservation"""
+        reservation = Reservation.objects.create(**validated_data)
+        availability = Availability.objects.get(rental_unit=reservation.rental_unit)
+        if availability.instant_booking == True:
+            calendar_event = CalendarEvent.objects.create(
+                rental_unit=reservation.rental_unit,
+                reason='Reservation',
+                start_date=reservation.check_in,
+                end_date=reservation.check_out,
+            )
+            calendar_event.save()
+        return reservation
+        
 
 class ReservationDetailSerializer(ReservationSerializer):
     """Serializer for Reservation detail view"""

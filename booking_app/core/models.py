@@ -67,7 +67,7 @@ class RentalUnit(models.Model):
     description = models.TextField(blank=True)
     link = models.CharField(max_length=255, blank=True)
     languages = models.CharField(max_length=255, default='en,')
-    status = models.BooleanField(default=False)
+    status = models.BooleanField(default=True)
     images = models.CharField(max_length=255, blank=True)
     unit_type = models.CharField(max_length=30, choices=UNIT_CHOICES, default='hotel')
     max_guests = models.IntegerField(default=1)
@@ -305,16 +305,6 @@ class Fee(models.Model):
     class Meta:
         unique_together = ('rental_unit', 'name',)
         
-        
-DAY_CHOICES = (
-    ('Monday', 'monday'),
-    ('Tuesday', 'tuesday'),
-    ('Wednesday', 'wednesday'),
-    ('Thursday', 'thursday'),
-    ('Friday', 'friday'),
-    ('Saturday', 'saturday'),
-    ('Sunday', 'sunday'),
-)
         
 class Availability(models.Model):
     """availability preferences for a rental unit"""
