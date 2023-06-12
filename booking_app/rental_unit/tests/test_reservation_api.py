@@ -103,6 +103,10 @@ class PrivateReservationApiTests(TestCase):
             check_in=payload['check_in'],
             check_out=payload['check_out']
         ).exists())
+        self.assertFalse(CalendarEvent.objects.filter(
+            start_date=payload['check_in'],
+            end_date=payload['check_out']
+        ))
         
     def test_get_reservation_list_for_user(self):
         """test retrieving a list of reservations for current_user"""
