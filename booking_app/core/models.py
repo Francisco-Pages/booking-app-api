@@ -360,6 +360,14 @@ class CalendarEvent(models.Model):
     end_date = models.DateField(blank=True, null=True)
     creation_date = models.DateTimeField(auto_now_add=True)
     notes = models.TextField(blank=True)
+    night_price = models.DecimalField(max_digits=8, decimal_places=2, null=True)
+    night_subtotal = models.DecimalField(max_digits=8, decimal_places=2, null=True)
+    
+    def get_nightly_subtotal(self):
+        """get the nightly subtotal for the reservation"""
+        delta = self.end_date - self.start_date 
+        subtotal = delta.days * self.night_price
+        return subtotal
 
 
 CANCELLATION_CHOICES = (
@@ -434,6 +442,6 @@ class Reservation(models.Model):
         on_delete=models.CASCADE,
     )
     check_in = models.DateField()
-    check_out = models.DateField()
+    check_out = models.DateField() 
     creation_date = models.DateTimeField(auto_now_add=True)
-    
+    accepted = models.BooleanField(default=False)

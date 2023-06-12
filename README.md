@@ -297,3 +297,14 @@ reservations
     total
     status
 
+cancellation requests
+    id
+    reservation_id
+    reason
+update requests
+    id
+    reservation_id
+    new_check_in
+    new_check_out
+    creation_date
+payments

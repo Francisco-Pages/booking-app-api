@@ -11,7 +11,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import RentalUnit, Reservation, CalendarEvent, Availability
+from core.models import RentalUnit, Reservation, CalendarEvent, Availability, Pricing
 
 from rental_unit.serializers import (
     ReservationSerializer,
@@ -86,6 +86,8 @@ class PrivateReservationApiTests(TestCase):
         """test a user creating a reservation"""
         rental_unit = create_rental_unit(user=self.user)
         availability = Availability.objects.create(rental_unit=rental_unit)
+        pricing = Pricing.objects.create(rental_unit=rental_unit)
+        
         payload = {
             'rental_unit': rental_unit.id,
             'user': self.user.id,
@@ -214,7 +216,7 @@ class PrivateReservationApiTests(TestCase):
         """test error when two or more reservations dates are not unique"""
         rental_unit = create_rental_unit(user=self.user)
         availability = Availability.objects.create(rental_unit=rental_unit)
-        
+        pricing = Pricing.objects.create(rental_unit=rental_unit)
         payload_one = {
             'rental_unit': rental_unit.id,
             'user': self.user.id,
@@ -381,6 +383,7 @@ class PrivateReservationApiTests(TestCase):
             rental_unit=rental_unit,
             instant_booking=True
         )
+        pricing = Pricing.objects.create(rental_unit=rental_unit)
         payload = {
             'rental_unit': rental_unit.id,
             'user': self.user.id,
@@ -404,6 +407,38 @@ class PrivateReservationApiTests(TestCase):
             end_date=payload['check_out']
         ).exists())
         
+    def test_get_nightly_subtotal(self):
+        """test getting the nightly subtotal for a reservation"""
+        rental_unit = create_rental_unit(user=self.user)
+        availability = Availability.objects.create(rental_unit=rental_unit, instant_booking=True)
+        np = Decimal(100)
+        ci = date(2023, 9, 15)
+        co = date(2023, 9, 21)
+        pricing = Pricing.objects.create(
+            rental_unit=rental_unit, 
+            night_price=np
+        )
+        
+        payload = {
+            'rental_unit': rental_unit.id,
+            'user': self.user.id,
+            'check_in': ci,
+            'check_out': co
+        }
+        result = self.client.post(RESERVATION_URL, payload)
+        
+        self.assertEqual(result.status_code, status.HTTP_201_CREATED)
+        
+        calendar_event = CalendarEvent.objects.filter(
+            start_date=payload['check_in'],
+            end_date=payload['check_out']
+        )[0]
+        delta = co - ci
+        nights = delta.days
+        subtotal = nights * np
+        self.assertEqual(calendar_event.get_nightly_subtotal(), calendar_event.night_subtotal)
+        
+        
 class AdminReservationApiTests(TestCase):
     """tests for administrative users"""
     def setUp(self):
@@ -417,9 +452,10 @@ class AdminReservationApiTests(TestCase):
     def test_patch_reservation(self):
         """test updating a reservation"""
         rental_unit = create_rental_unit(user=self.user)
+        pricing = Pricing.objects.create(rental_unit=rental_unit)
         availability = Availability.objects.create(rental_unit=rental_unit)
         reservation = create_reservation(user_id=self.user, rental_unit_id=rental_unit)
-        new_check_out = date(2023, 9, 5)
+        new_check_out = date(2023, 9, 7)
         
         payload = {
             'rental_unit': rental_unit.id,
@@ -444,3 +480,30 @@ class AdminReservationApiTests(TestCase):
         
         self.assertEqual(result.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(Reservation.objects.filter(id=reservation.id).exists())
+        
+    def test_confirm_reservation(self):
+        """test confirming a reservation and moving it to calendar event table"""
+        rental_unit = create_rental_unit(user=self.user)
+        pricing = Pricing.objects.create(rental_unit=rental_unit)
+        availability = Availability.objects.create(rental_unit=rental_unit)
+        reservation = create_reservation(user_id=self.user, rental_unit_id=rental_unit)
+        confirmed = True
+        
+        payload = {
+            'rental_unit': rental_unit.id,
+            'check_in': date(2023, 9, 1),
+            'check_out': date(2023, 9, 7),
+            'accepted': confirmed,
+        }
+        
+        url = detail_url(reservation.id)
+        result = self.client.patch(url, payload)
+        
+        self.assertEqual(result.status_code, status.HTTP_200_OK)
+        reservation.refresh_from_db()
+        self.assertEqual(reservation.accepted, True)
+        calendar_event = CalendarEvent.objects.filter(
+            start_date=payload['check_in'],
+            end_date=payload['check_out']
+        )[0]
+        self.assertTrue(CalendarEvent.objects.filter(id=calendar_event.id).exists())
