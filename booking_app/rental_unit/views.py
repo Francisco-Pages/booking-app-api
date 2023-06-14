@@ -20,6 +20,7 @@ from core.models import (
     Rulebook,
     Guidebook,
     Place,
+    ReservationRequest,
     Reservation
 )
 from rental_unit import serializers
@@ -214,7 +215,7 @@ class CalendarEventViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         """retrieve CalendarEvent for authenticated users"""
-        return self.queryset.all().order_by('-rental_unit')   
+        return self.queryset.all().order_by('-start_date')   
     
     def get_serializer_class(self):
         """returns serializer class for request"""
@@ -277,23 +278,64 @@ class PlaceViewSet(viewsets.ModelViewSet):
         return self.serializer_class
     
     
-class ReservationViewSet(viewsets.ModelViewSet):
+# class ReservationViewSet(viewsets.ModelViewSet):
+#     """view for manage Reservation for the rental unit APIs"""
+#     serializer_class = serializers.ReservationDetailSerializer
+#     queryset = Reservation.objects.all()
+#     authentication_classes = [TokenAuthentication]
+#     permission_classes = [permissions.IsAuthenticated]
+    
+#     def get_queryset(self):
+#         """retrieve Reservation for authenticated users"""
+#         return self.queryset.filter(
+#             user=self.request.user
+#         ).order_by('-id')   
+    
+#     def get_serializer_class(self):
+#         """returns serializer class for request"""
+#         if self.action == 'list':
+#             return serializers.ReservationSerializer
+#         return self.serializer_class
+    
+#     def perform_update(self, serializer):
+#         user = self.request.user
+        
+#         if user.is_staff == False:
+#             raise drf_serializers.ValidationError(
+#                 'Not authorized to update this reservation'
+#             )
+#         else:
+#             serializer.save()
+    
+#     def perform_destroy(self, instance):
+#         user = self.request.user
+        
+#         if user.is_staff == False:
+#             raise drf_serializers.ValidationError(
+#                 'Not authorized to delete a reservation'
+#             )
+#         else:
+#             instance.delete()
+
+
+class ReservationRequestViewSet(viewsets.ModelViewSet):
     """view for manage Reservation for the rental unit APIs"""
-    serializer_class = serializers.ReservationDetailSerializer
-    queryset = Reservation.objects.all()
+    serializer_class = serializers.ReservationRequestDetailSerializer
+    queryset = ReservationRequest.objects.all()
     authentication_classes = [TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
-        """retrieve Reservation for authenticated users"""
-        return self.queryset.filter(
-            user=self.request.user
-        ).order_by('-id')   
+        """retrieve Reservation request for authenticated users"""
+        user = self.request.user
+        if user.is_staff == True:
+            return self.queryset.all().order_by('-check_in')
+        return self.queryset.filter(user=user.id).order_by('-check_in')   
     
     def get_serializer_class(self):
         """returns serializer class for request"""
         if self.action == 'list':
-            return serializers.ReservationSerializer
+            return serializers.ReservationRequestSerializer
         return self.serializer_class
     
     def perform_update(self, serializer):
@@ -301,7 +343,7 @@ class ReservationViewSet(viewsets.ModelViewSet):
         
         if user.is_staff == False:
             raise drf_serializers.ValidationError(
-                'Not authorized to update this reservation'
+                'Not authorized to update this reservation request'
             )
         else:
             serializer.save()
@@ -311,7 +353,28 @@ class ReservationViewSet(viewsets.ModelViewSet):
         
         if user.is_staff == False:
             raise drf_serializers.ValidationError(
-                'Not authorized to delete a reservation'
+                'Not authorized to delete a reservation request'
             )
         else:
             instance.delete()
+            
+            
+class ReservationViewSet(viewsets.ModelViewSet):
+    """view for manage the Reservation for the rental unit APIs"""
+    serializer_class = serializers.ReservationDetailSerializer
+    queryset = Reservation.objects.all()
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, permissions.DjangoModelPermissionsOrAnonReadOnly]
+    
+    def get_queryset(self):
+        """retrieve Reservation for authenticated users"""
+        user = self.request.user
+        # if user.is_staff == True:
+        #     return self.queryset.all().order_by('-check_in')
+        return self.queryset.filter(user=user.id).order_by('-check_in')   
+    
+    def get_serializer_class(self):
+        """returns serializer class for request"""
+        if self.action == 'list':
+            return serializers.ReservationSerializer
+        return self.serializer_class

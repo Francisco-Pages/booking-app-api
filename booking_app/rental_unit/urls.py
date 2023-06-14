@@ -20,6 +20,7 @@ router.register('calendar_events', views.CalendarEventViewSet)
 router.register('rulebooks', views.RulebookViewSet)
 router.register('guidebooks', views.GuidebookViewSet)
 router.register('places', views.PlaceViewSet)
+router.register('reservation_requests', views.ReservationRequestViewSet)
 router.register('reservations', views.ReservationViewSet)
 
 

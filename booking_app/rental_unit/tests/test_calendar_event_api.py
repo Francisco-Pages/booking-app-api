@@ -71,8 +71,9 @@ class PublicCalendarEventApiTests(TestCase):
         
         url = detail_url(calendar_event.id)
         result = self.client.get(url)
+        
+        self.assertTrue(result.status_code, status.HTTP_200_OK)
         serializer = CalendarEventDetailSerializer(calendar_event)
-
         self.assertEqual(result.data, serializer.data)
         
 
@@ -97,7 +98,7 @@ class PrivateCalendarEventApiTests(TestCase):
         
         result = self.client.get(CALENDAR_EVENT_URL)
         
-        calendar_events = CalendarEvent.objects.all().order_by('-rental_unit')
+        calendar_events = CalendarEvent.objects.all().order_by('-start_date')
         serializer = CalendarEventSerializer(calendar_events, many=True)
         self.assertEqual(result.status_code, status.HTTP_200_OK)
         self.assertEqual(result.data, serializer.data)
@@ -120,31 +121,32 @@ class PrivateCalendarEventApiTests(TestCase):
         payload = {
             'rental_unit': rental_unit.id,
             'reason': 'Reservation',
-            'start_date': "2023-06-28",
-            'notes': f'reservation for unit #{rental_unit.id}'
+            'start_date': date(2023, 6, 28),
+            'end_date': date(2023, 6, 30)
         }
         
         result = self.client.post(CALENDAR_EVENT_URL, payload)
 
         self.assertEqual(result.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertFalse(CalendarEvent.objects.filter(notes=payload['notes']).exists())
+        self.assertFalse(CalendarEvent.objects.filter(
+            rental_unit=payload['rental_unit'], 
+            start_date=payload['start_date'],
+            end_date=payload['end_date']
+        ).exists())
         
     def test_error_partial_update(self):
         """test error patch of a calendar_event by a non administrator"""
         rental_unit = create_rental_unit(user=self.user)
         original_reason = 'Blocked'
-        original_notes = 'sample notes'
         
         calendar_event = CalendarEvent.objects.create(
             rental_unit=rental_unit,
             reason=original_reason,
-            notes=original_notes, 
         )
 
         payload = {
             'rental_unit': rental_unit.id,
             'reason': 'Reservation',
-            'notes': f'reservation updated for unit #{rental_unit.id}'
         }
         
         url = detail_url(calendar_event.id)
@@ -153,15 +155,13 @@ class PrivateCalendarEventApiTests(TestCase):
         self.assertEqual(result.status_code, status.HTTP_403_FORBIDDEN)
         calendar_event.refresh_from_db()
         self.assertEqual(calendar_event.reason, original_reason)
-        self.assertEqual(calendar_event.notes, original_notes)
         
     def test_error_full_update(self):
         """test error put of calendar_event by non admin"""
         rental_unit = create_rental_unit(user=self.user)
         original_reason = 'Blocked'
-        original_start = '2023-06-28'
-        original_end = '2023-07-4'
-        original_notes = f"reservation for rental unit #{rental_unit.id}"
+        original_start = date(2023, 6, 28)
+        original_end = date(2023, 7, 4)
         
         
         calendar_event = CalendarEvent.objects.create(
@@ -169,7 +169,6 @@ class PrivateCalendarEventApiTests(TestCase):
             reason=original_reason,
             start_date=original_start,
             end_date=original_end,
-            notes=original_notes, 
         )
 
         payload = {
@@ -177,7 +176,6 @@ class PrivateCalendarEventApiTests(TestCase):
             'reason': 'Reservation',
             'start_date': date(2023,6,20),
             'end_date': date(2023,6,27),
-            'notes': f'reservation updated for unit #{rental_unit.id}'
         }
         
         url = detail_url(calendar_event.id)
@@ -187,7 +185,7 @@ class PrivateCalendarEventApiTests(TestCase):
         self.assertEqual(result.status_code, status.HTTP_403_FORBIDDEN)
         calendar_event.refresh_from_db()
 
-        self.assertEqual(getattr(calendar_event, 'notes'), original_notes)
+        self.assertEqual(CalendarEvent.objects.get(id=calendar_event.id).start_date, original_start)
         
     def test_error_delete_calendar_event(self):
         """test error when deleting a CalendarEvent by a non admin"""
@@ -219,12 +217,16 @@ class AdminCalendarEventApiTests(TestCase):
         payload = {
             'rental_unit': rental_unit.id,
             'reason': 'Reservation',
-            'start_date': "2023-06-28",
-            'notes': f'reservation for unit #{rental_unit.id}'
+            'start_date': date(2023, 6, 28),
+            'end_date': date(2023, 6, 30),
         }
         result = self.client.post(CALENDAR_EVENT_URL, payload)
 
-        self.assertTrue(CalendarEvent.objects.filter(notes=payload['notes']).exists())
+        self.assertTrue(CalendarEvent.objects.filter(
+            rental_unit=payload['rental_unit'], 
+            start_date=payload['start_date'],
+            end_date=payload['end_date']
+        ).exists())
         self.assertEqual(result.status_code, status.HTTP_201_CREATED)
 
     # def test_error_create_double_calendar_event(self):
@@ -251,18 +253,19 @@ class AdminCalendarEventApiTests(TestCase):
         """test patch of a calendar_event by an administrator"""
         rental_unit = create_rental_unit(user=self.user)
         original_reason = 'Blocked'
-        original_notes = 'sample notes'
+        original_start = date(2023, 6, 28)
+        original_end = date(2023, 7, 4)
         
         calendar_event = CalendarEvent.objects.create(
             rental_unit=rental_unit,
             reason=original_reason,
-            notes=original_notes, 
+            start_date=original_start,
+            end_date=original_end
         )
 
         payload = {
             'rental_unit': rental_unit.id,
             'reason': 'Reservation',
-            'notes': f'reservation updated for unit #{rental_unit.id}'
         }
         
         url = detail_url(calendar_event.id)
@@ -271,15 +274,14 @@ class AdminCalendarEventApiTests(TestCase):
         self.assertEqual(result.status_code, status.HTTP_200_OK)
         calendar_event.refresh_from_db()
         self.assertEqual(calendar_event.reason, payload['reason'])
-        self.assertEqual(calendar_event.notes, payload['notes'])
+        self.assertEqual(calendar_event.start_date, original_start)
         
     def test_full_update(self):
         """test put of calendar_event"""
         rental_unit = create_rental_unit(user=self.user)
         original_reason = 'Blocked'
-        original_start = '2023-06-28'
-        original_end = '2023-07-4'
-        original_notes = f"reservation for rental unit #{rental_unit.id}"
+        original_start = date(2023, 6, 28)
+        original_end = date(2023, 7, 4)
         
         
         calendar_event = CalendarEvent.objects.create(
@@ -287,15 +289,12 @@ class AdminCalendarEventApiTests(TestCase):
             reason=original_reason,
             start_date=original_start,
             end_date=original_end,
-            notes=original_notes, 
         )
 
         payload = {
-            'id': calendar_event.id,
             'reason': 'Reservation',
             'start_date': date(2023,6,20),
             'end_date': date(2023,6,27),
-            'notes': f'reservation updated for unit #{rental_unit.id}'
         }
         
         url = detail_url(calendar_event.id)
@@ -306,7 +305,7 @@ class AdminCalendarEventApiTests(TestCase):
         calendar_event.refresh_from_db()
         
         for k, v in payload.items():
-            if k == 'rental_unit':
+            if k == 'rental_unit' or k == 'creation_date':
                 continue
             self.assertEqual(getattr(calendar_event, k), v)
         

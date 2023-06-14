@@ -359,15 +359,6 @@ class CalendarEvent(models.Model):
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True, null=True)
     creation_date = models.DateTimeField(auto_now_add=True)
-    notes = models.TextField(blank=True)
-    night_price = models.DecimalField(max_digits=8, decimal_places=2, null=True)
-    night_subtotal = models.DecimalField(max_digits=8, decimal_places=2, null=True)
-    
-    def get_nightly_subtotal(self):
-        """get the nightly subtotal for the reservation"""
-        delta = self.end_date - self.start_date 
-        subtotal = delta.days * self.night_price
-        return subtotal
 
 
 CANCELLATION_CHOICES = (
@@ -433,7 +424,20 @@ class Place(models.Model):
     longitude = models.DecimalField(max_digits=9, decimal_places=6, default=0, blank=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, default=0, blank=True)
     
-
+    
+class ReservationRequest(models.Model):
+    """a user request to make a reservation"""
+    rental_unit = models.ForeignKey(RentalUnit, on_delete=models.CASCADE, null=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    check_in = models.DateField()
+    check_out = models.DateField() 
+    creation_date = models.DateTimeField(auto_now_add=True)
+    status = models.BooleanField(default=False)
+    
+    
 class Reservation(models.Model):
     """a reservation made by a guest for a rental unit"""
     rental_unit = models.ForeignKey(RentalUnit, on_delete=models.CASCADE, null=True)
@@ -443,5 +447,21 @@ class Reservation(models.Model):
     )
     check_in = models.DateField()
     check_out = models.DateField() 
+    night_price = models.DecimalField(max_digits=8, decimal_places=2, null=True)
+    subtotal = models.DecimalField(max_digits=8, decimal_places=2, null=True)
+    taxes = models.DecimalField(max_digits=3, 
+        decimal_places=2, 
+        null=True, 
+        validators=[
+            MinValueValidator(0),
+            MaxValueValidator(1)
+        ]
+    )
+    total = models.DecimalField(max_digits=8, decimal_places=2, null=True)
     creation_date = models.DateTimeField(auto_now_add=True)
-    accepted = models.BooleanField(default=False)
+    
+    # def get_nightly_subtotal(self):
+    #     """get the nightly subtotal for the reservation"""
+    #     delta = self.end_date - self.start_date 
+    #     subtotal = delta.days * self.night_price
+    #     return subtotal
