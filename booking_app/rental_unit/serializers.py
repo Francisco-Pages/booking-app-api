@@ -403,6 +403,7 @@ class ReservationRequestSerializer(serializers.ModelSerializer):
         if availability.instant_booking == True:
             reservation = Reservation.objects.create(
                 rental_unit=reservation_request.rental_unit,
+                reservation_request=reservation_request,
                 user=reservation_request.user,
                 check_in=reservation_request.check_in,
                 check_out=reservation_request.check_out,
@@ -424,7 +425,8 @@ class ReservationRequestSerializer(serializers.ModelSerializer):
         return reservation_request
         
     def update(self, instance, validated_data):
-        
+        if Reservation.objects.filter(reservation_request=instance.id).exists():
+            raise drf_serializers.ValidationError("Error: cannot edit a reservation request for a confirmed reservation")
         pricing = Pricing.objects.get(rental_unit=instance.rental_unit)
         night_price = pricing.night_price
         stay_length = (instance.check_out - instance.check_in).days

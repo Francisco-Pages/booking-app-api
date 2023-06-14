@@ -476,17 +476,37 @@ class AdminReservationRequestApiTests(TestCase):
         rental_unit = create_rental_unit(user=self.user)
         pricing = Pricing.objects.create(rental_unit=rental_unit)
         availability = Availability.objects.create(rental_unit=rental_unit)
-        reservation_request = create_reservation_request(
-            user_id=self.user, 
-            rental_unit_id=rental_unit
-        )
+       
+        post_payload = {
+            'rental_unit': rental_unit.id,
+            'user': self.user.id,
+            'check_in': date(2023, 8, 2),
+            'check_out': date(2023, 8, 6)
+        }
+        post_result = self.client.post(RESERVATION_REQUEST_URL, post_payload)
+        self.assertEqual(post_result.status_code, status.HTTP_201_CREATED)
+        self.assertFalse(Reservation.objects.filter(
+            rental_unit=post_payload['rental_unit'], 
+            user=post_payload['user'],
+            check_in=post_payload['check_in'],
+            check_out=post_payload['check_out']
+        ).exists())
+        
         new_check_out = date(2023, 9, 7)
         
         payload = {
             'rental_unit': rental_unit.id,
+            'user': self.user.id,
             'check_in': date(2023, 9, 1),
             'check_out': new_check_out
         }
+        
+        reservation_request = ReservationRequest.objects.filter(
+            rental_unit=post_payload['rental_unit'], 
+            user=post_payload['user'],
+            check_in=post_payload['check_in'],
+            check_out=post_payload['check_out']
+        )[0]
         
         url = detail_url(reservation_request.id)
         result = self.client.patch(url, payload)
@@ -494,6 +514,50 @@ class AdminReservationRequestApiTests(TestCase):
         self.assertEqual(result.status_code, status.HTTP_200_OK)
         reservation_request.refresh_from_db()
         self.assertEqual(reservation_request.check_out, payload['check_out'])
+        
+    def test_error_patch_confirmed_reservation(self):
+        """test updating a reservation"""
+        rental_unit = create_rental_unit(user=self.user)
+        pricing = Pricing.objects.create(rental_unit=rental_unit)
+        availability = Availability.objects.create(rental_unit=rental_unit, instant_booking=True)
+       
+        post_payload = {
+            'rental_unit': rental_unit.id,
+            'user': self.user.id,
+            'check_in': date(2023, 8, 2),
+            'check_out': date(2023, 8, 6)
+        }
+        post_result = self.client.post(RESERVATION_REQUEST_URL, post_payload)
+        self.assertEqual(post_result.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(Reservation.objects.filter(
+            rental_unit=post_payload['rental_unit'], 
+            user=post_payload['user'],
+            check_in=post_payload['check_in'],
+            check_out=post_payload['check_out']
+        ).exists())
+        
+        new_check_out = date(2023, 9, 7)
+        
+        payload = {
+            'rental_unit': rental_unit.id,
+            'user': self.user.id,
+            'check_in': date(2023, 9, 1),
+            'check_out': new_check_out
+        }
+        
+        reservation_request = ReservationRequest.objects.filter(
+            rental_unit=post_payload['rental_unit'], 
+            user=post_payload['user'],
+            check_in=post_payload['check_in'],
+            check_out=post_payload['check_out']
+        )[0]
+        
+        url = detail_url(reservation_request.id)
+        result = self.client.patch(url, payload)
+        
+        self.assertEqual(result.status_code, status.HTTP_400_BAD_REQUEST)
+        reservation_request.refresh_from_db()
+        self.assertEqual(reservation_request.check_out, post_payload['check_out'])
         
     def test_delete_reservation(self):
         """test admin deleting a reservation"""

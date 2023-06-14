@@ -441,6 +441,7 @@ class ReservationRequest(models.Model):
 class Reservation(models.Model):
     """a reservation made by a guest for a rental unit"""
     rental_unit = models.ForeignKey(RentalUnit, on_delete=models.CASCADE, null=True)
+    reservation_request = models.OneToOneField(ReservationRequest, on_delete=models.CASCADE, null=True)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
