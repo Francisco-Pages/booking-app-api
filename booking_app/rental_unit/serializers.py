@@ -452,6 +452,7 @@ class ReservationRequestSerializer(serializers.ModelSerializer):
             
             reservation = Reservation.objects.create(
                 rental_unit=instance.rental_unit,
+                reservation_request=instance,
                 user=instance.user,
                 check_in=instance.check_in,
                 check_out=instance.check_out,
