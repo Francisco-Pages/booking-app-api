@@ -11,7 +11,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import RentalUnit, CalendarEvent
+from core.models import RentalUnit, CalendarEvent, Availability
 
 from rental_unit.serializers import (
     CalendarEventSerializer,
@@ -213,7 +213,7 @@ class AdminCalendarEventApiTests(TestCase):
     def test_create_calendar_event(self):
         """test creating a CalendarEvent by an administrator"""
         rental_unit = create_rental_unit(user=self.user)
-        
+        availability = Availability.objects.create(rental_unit=rental_unit)
         payload = {
             'rental_unit': rental_unit.id,
             'reason': 'Reservation',
@@ -229,29 +229,10 @@ class AdminCalendarEventApiTests(TestCase):
         ).exists())
         self.assertEqual(result.status_code, status.HTTP_201_CREATED)
 
-    # def test_error_create_double_calendar_event(self):
-    #     """test that there can only be one type of calendar_event for one rental unit"""
-    #     rental_unit = create_rental_unit(user=self.user)
-    #     calendar_event = CalendarEvent.objects.create(
-    #         rental_unit=rental_unit,
-    #         name='Pet',
-    #         price=Decimal('50.51')
-    #     )
-        
-    #     payload = {
-    #         'rental_unit': rental_unit.id,
-    #         'name': 'Pet',
-    #         'price': Decimal('50.50')
-    #     }
-    #     result = self.client.post(CALENDAR_EVENT_URL, payload)
-        
-    #     self.assertEqual(calendar_event.price, Decimal('50.51'))
-    #     self.assertEqual(result.status_code, status.HTTP_400_BAD_REQUEST)
-    #     self.assertFalse(CalendarEvent.objects.filter(rental_unit=payload['rental_unit'], name=payload['name'], price=payload['price']).exists())
-           
     def test_partial_update(self):
         """test patch of a calendar_event by an administrator"""
         rental_unit = create_rental_unit(user=self.user)
+        availability = Availability.objects.create(rental_unit=rental_unit)
         original_reason = 'Blocked'
         original_start = date(2023, 6, 28)
         original_end = date(2023, 7, 4)
@@ -266,11 +247,13 @@ class AdminCalendarEventApiTests(TestCase):
         payload = {
             'rental_unit': rental_unit.id,
             'reason': 'Reservation',
+            'start_date': date(2023, 6, 28),
+            'end_date': date(2023, 7, 4)
         }
         
         url = detail_url(calendar_event.id)
         result = self.client.patch(url, payload)
-        
+        print(result.data)
         self.assertEqual(result.status_code, status.HTTP_200_OK)
         calendar_event.refresh_from_db()
         self.assertEqual(calendar_event.reason, payload['reason'])
@@ -279,6 +262,7 @@ class AdminCalendarEventApiTests(TestCase):
     def test_full_update(self):
         """test put of calendar_event"""
         rental_unit = create_rental_unit(user=self.user)
+        availability = Availability.objects.create(rental_unit=rental_unit)
         original_reason = 'Blocked'
         original_start = date(2023, 6, 28)
         original_end = date(2023, 7, 4)
@@ -292,6 +276,7 @@ class AdminCalendarEventApiTests(TestCase):
         )
 
         payload = {
+            'rental_unit': rental_unit.id,
             'reason': 'Reservation',
             'start_date': date(2023,6,20),
             'end_date': date(2023,6,27),
