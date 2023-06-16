@@ -466,3 +466,14 @@ class Reservation(models.Model):
     #     delta = self.end_date - self.start_date 
     #     subtotal = delta.days * self.night_price
     #     return subtotal
+    
+
+class CancellationRequest(models.Model):
+    """a user request to cancel a confirmed reservation"""
+    reservation = models.OneToOneField(Reservation, on_delete=models.CASCADE)
+    status = models.BooleanField(default=False)
+    creation_date = models.DateTimeField(auto_now_add=True)
+    reason = models.TextField(blank=True)
+    refund = models.DecimalField(max_digits=8, decimal_places=2, null=True)
+    
+    

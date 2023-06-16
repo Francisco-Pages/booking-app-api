@@ -206,3 +206,21 @@ class ModelTest(TestCase):
         
         self.assertTrue(models.Reservation.objects.filter(id=reservation.id).exists())
         
+    def test_create_cancellation_request(self):
+        """test creating a reservation cancellation request"""
+        host = create_superuser(email='test@example.com', password='test1234')
+        rental_unit = models.RentalUnit.objects.create(user=host, title="a new home for rent")
+        guest = create_user(email='guest@example.com', password='password123')
+        
+        reservation = models.Reservation.objects.create(
+            rental_unit=rental_unit, 
+            user=guest,
+            check_in=date(2023,6,20),
+            check_out=date(2023,6,28)
+        )
+        
+        cancellation_request = models.CancellationRequest.objects.create(
+            reservation=reservation,
+        )
+        
+        self.assertTrue(models.CancellationRequest.objects.filter(id=cancellation_request.id).exists())
