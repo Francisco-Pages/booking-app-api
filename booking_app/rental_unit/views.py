@@ -21,7 +21,8 @@ from core.models import (
     Guidebook,
     Place,
     ReservationRequest,
-    Reservation
+    Reservation,
+    CancellationRequest
 )
 from rental_unit import serializers
 
@@ -377,4 +378,25 @@ class ReservationViewSet(viewsets.ModelViewSet):
         """returns serializer class for request"""
         if self.action == 'list':
             return serializers.ReservationSerializer
+        return self.serializer_class
+    
+    
+class CancellationRequestViewSet(viewsets.ModelViewSet):
+    """view for manage the cancellation request for the rental unit APIs"""
+    serializer_class = serializers.CancellationRequestDetailSerializer
+    queryset = CancellationRequest.objects.all()
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, permissions.DjangoModelPermissionsOrAnonReadOnly]
+    
+    def get_queryset(self):
+        """retrieve Cancellation Requests for authenticated users"""
+        user = self.request.user
+        # if user.is_staff == True:
+        #     return self.queryset.all().order_by('-check_in')
+        return self.queryset.filter(user=user.id).order_by('-creation_date')   
+    
+    def get_serializer_class(self):
+        """returns serializer class for request"""
+        if self.action == 'list':
+            return serializers.CancellationRequestSerializer
         return self.serializer_class

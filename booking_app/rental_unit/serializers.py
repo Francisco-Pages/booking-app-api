@@ -17,7 +17,8 @@ from core.models import (
     Guidebook,
     Place,
     ReservationRequest,
-    Reservation
+    Reservation,
+    CancellationRequest
 )
 
 from rest_framework import serializers as drf_serializers
@@ -433,3 +434,19 @@ class ReservationDetailSerializer(ReservationSerializer):
     
     class Meta(ReservationSerializer.Meta):
         fields = ReservationSerializer.Meta.fields
+        
+        
+class CancellationRequestSerializer(serializers.ModelSerializer):
+    """Serializer for a Cancellation Requests"""
+
+    class Meta:
+        model = CancellationRequest
+        fields = '__all__'
+        read_only_fields = ['id']
+        
+        
+class CancellationRequestDetailSerializer(CancellationRequestSerializer):
+    """Serializer for CancellationRequest detail view"""
+    
+    class Meta(CancellationRequestSerializer.Meta):
+        fields = CancellationRequestSerializer.Meta.fields
