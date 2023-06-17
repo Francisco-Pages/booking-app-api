@@ -24,6 +24,10 @@ from core.models import (
 from rest_framework import serializers as drf_serializers
 
 
+# now = datetime.now().date()
+now = date(2023, 6, 7)
+
+
 class RentalUnitSerializer(serializers.ModelSerializer):
     """serializer for rental unit"""
     class Meta:
@@ -144,8 +148,6 @@ class CalendarEventSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'creation_date']
         
     def validate(self, data):
-        now = datetime.now().date()
-        
         """FOR WHEN YOU FIGURE OUT HOW TO REMOVE DATA DEPENDENCIES!!!!!"""
         instance_id = False
         if 'PATCH' in str(self.context):
@@ -272,8 +274,7 @@ class ReservationRequestSerializer(serializers.ModelSerializer):
         
     def validate(self, data):
         """validations for reservation requests"""
-        now = datetime.now().date()
-
+        
         """check that check in and check out dates are given"""
         if 'check_in' not in data or 'check_out' not in data:
             raise drf_serializers.ValidationError('Error: please enter check in and check out dates')
@@ -288,7 +289,7 @@ class ReservationRequestSerializer(serializers.ModelSerializer):
             raise drf_serializers.ValidationError('Check in date cannot be on or before check out date, please choose another date.')
         
         """check that the chosen dates are available"""
-        reservaton_list = Reservation.objects.filter(rental_unit=data['rental_unit'])
+        reservaton_list = Reservation.objects.filter(rental_unit=data['rental_unit']).exclude(status=False)
         availability = Availability.objects.get(rental_unit=data['rental_unit'])
         prep = timedelta(days=availability.prep_time)
         
@@ -322,9 +323,7 @@ class ReservationRequestSerializer(serializers.ModelSerializer):
             raise drf_serializers.ValidationError(f'Reservation must be shorter than {availability.max_stay}') 
         
         """check that a reservation is made within the notice boundaries set by the rental unit owner"""
-        now = datetime.now().date()
-        testing_now = date(2023, 6, 7)
-        delta = check_in - testing_now
+        delta = check_in - now
         
         if delta.days < availability.min_notice:
             raise drf_serializers.ValidationError(f'Reservation must be made at least {availability.min_notice} days before check in date.')
@@ -350,7 +349,7 @@ class ReservationRequestSerializer(serializers.ModelSerializer):
                 user=reservation_request.user,
                 check_in=reservation_request.check_in,
                 check_out=reservation_request.check_out,
-                days=stay_length,
+                nights=stay_length,
                 night_price=pricing.night_price,
                 subtotal=subtotal,
                 taxes=pricing.tax,
@@ -445,11 +444,100 @@ class CancellationRequestSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['id']
         
-    def create(self, validated_data):
-        """create a return reservation request"""
-        cancellation_request = CancellationRequest.objects.create(**validated_data)
+    def validate(self, data):
+        """validate a cancellation request"""
+        instance_id = False
+        if 'PATCH' in str(self.context):
+            mystr = str(self.context['request'])
+            start_of = mystr.index('cancellation_requests/') + 22
+            instance_id = mystr[start_of:-3]
+            cancellation_request = CancellationRequest.objects.get(id=instance_id)
+            if 'user' not in data:
+                data['user'] = cancellation_request.user
+            if 'reservation' not in data:
+                data['reservation'] = cancellation_request.reservation
+           
+        return data
         
-        return cancellation_request
+    def create(self, validated_data):
+        """create a return a cancellation request"""
+        now = datetime.now().date()
+        
+        cancellation_request = CancellationRequest.objects.create(**validated_data)
+        reservation = Reservation.objects.get(id=cancellation_request.reservation.id)
+        # check cancellation policy for refund
+        rulebook = Rulebook.objects.get(rental_unit=cancellation_request.reservation.rental_unit)
+        cancellation_policy = rulebook.cancellation_policy
+        
+        delta = reservation.check_in - cancellation_request.creation_date.date()
+        time_since_reservation = (now - cancellation_request.creation_date.date()).days
+        # if cancellation occurs the day of check in
+        if delta == 0:
+            cancellation_request.refund = 0
+            reservation.status = False
+            CalendarEvent.objects.filter(
+                rental_unit=reservation.rental_unit,
+                start_date=reservation.check_in,
+                end_date=reservation.check_out
+            ).delete()
+            reservation.save()
+            cancellation_request.save()
+            
+            return cancellation_request
+        
+        # if cancellation policy is flexible
+        if cancellation_policy == 'Flexible' and delta.days >= 1:
+            cancellation_request.refund = 1
+            reservation.status = False
+            CalendarEvent.objects.filter(
+                rental_unit=reservation.rental_unit,
+                start_date=reservation.check_in,
+                end_date=reservation.check_out
+            ).delete()
+            reservation.save()
+            cancellation_request.save()
+            
+            return cancellation_request
+        
+        # if cancellation policy is moderate
+        if cancellation_policy == 'Moderate':
+            if delta.days >= 5:
+                cancellation_request.refund = 1
+            if delta.days >= 1 and delta.days < 5:
+                cancellation_request.refund = 0.5
+            reservation.status = False
+            CalendarEvent.objects.filter(
+                rental_unit=reservation.rental_unit,
+                start_date=reservation.check_in,
+                end_date=reservation.check_out
+            ).delete()
+            reservation.save()
+            cancellation_request.save()
+            
+            return cancellation_request
+        
+        # if cancellation policy is firm
+        if cancellation_policy == 'Firm':
+            if delta.days >= 30:
+                cancellation_request.refund = 1
+            if delta.days >= 7 and delta.days < 30:
+                cancellation_request.refund = 0.5
+            if delta.days < 7:
+                cancellation_request.refund = 0
+            if delta.days >= 14 and time_since_reservation < 2:
+                cancellation_request.refund = 1
+            reservation.status = False
+            CalendarEvent.objects.filter(
+                rental_unit=reservation.rental_unit,
+                start_date=reservation.check_in,
+                end_date=reservation.check_out
+            ).delete()
+            reservation.save()
+            cancellation_request.save()
+            
+            return cancellation_request
+        
+        
         
         
 class CancellationRequestDetailSerializer(CancellationRequestSerializer):

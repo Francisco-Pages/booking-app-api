@@ -460,8 +460,8 @@ class PrivateReservationRequestApiTests(TestCase):
         subtotal = nights * np
         self.assertEqual(reservation.subtotal, subtotal)
         
-    def test_get_total_days(self):
-        """test getting the nightly subtotal for a reservation"""
+    def test_get_total_nights(self):
+        """test getting the total number of nights for a reservation"""
         rental_unit = create_rental_unit(user=self.user)
         availability = Availability.objects.create(rental_unit=rental_unit, instant_booking=True)
         np = Decimal(100)

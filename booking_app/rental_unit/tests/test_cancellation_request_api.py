@@ -11,12 +11,15 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import RentalUnit, ReservationRequest, CalendarEvent, Availability, Pricing, Reservation, CancellationRequest
+from core.models import RentalUnit, ReservationRequest, CalendarEvent, Availability, Pricing, Reservation, CancellationRequest, Rulebook
 
 from rental_unit.serializers import (
     CancellationRequestSerializer,
     CancellationRequestDetailSerializer
 )
+
+print(datetime.now())
+
 
 
 CANCELLATION_REQUEST_URL = reverse('rental_unit:cancellationrequest-list')
@@ -86,6 +89,7 @@ class PrivateCancellationRequestApiTests(TestCase):
         """create a cancellation request"""
         rental_unit = create_rental_unit(user=self.user)
         reservation = create_reservation(user_id=self.user, rental_unit_id=rental_unit)
+        rulebook = Rulebook.objects.create(rental_unit=rental_unit)
         self.assertTrue(Reservation.objects.filter(id=reservation.id).exists())
         payload = {
             'user': self.user.id,
@@ -180,6 +184,265 @@ class PrivateCancellationRequestApiTests(TestCase):
         
         self.assertEqual(result.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(CancellationRequest.objects.filter(id=cancellation_request.id).exists())
+        
+    def test_flexible_cancellation(self):
+        """test a user creating a cancellation request, cancelling a reservation and getting refund value"""
+        rental_unit = create_rental_unit(user=self.user)
+        rulebook = Rulebook.objects.create(rental_unit=rental_unit, cancellation_policy='Flexible')
+        
+        reservation = create_reservation(
+            user_id=self.user, 
+            rental_unit_id=rental_unit,
+            check_in=date(2023, 8, 1),
+            check_out=date(2023, 8, 10),
+        )
+        self.assertTrue(Reservation.objects.filter(id=reservation.id).exists())
+        
+        calendar_event = CalendarEvent.objects.create(
+            rental_unit=reservation.rental_unit,
+            reason='Reservation',
+            start_date=reservation.check_in,
+            end_date=reservation.check_out
+        )
+        self.assertTrue(CalendarEvent.objects.filter(id=calendar_event.id).exists())
+
+        payload = {
+            'user': self.user.id,
+            'reservation': reservation.id,
+        }
+        
+        result = self.client.post(CANCELLATION_REQUEST_URL, payload)
+        
+        self.assertTrue(result.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(CancellationRequest.objects.filter(reservation=reservation).exists())
+        
+        cancellation_request = CancellationRequest.objects.get(reservation=reservation)
+
+        self.assertEqual(cancellation_request.refund, 1)
+        self.assertEqual(Reservation.objects.get(id=reservation.id).status, False)
+        self.assertFalse(CalendarEvent.objects.filter(id=calendar_event.id).exists())
+
+    def test_moderate_cancellation(self):
+        """test a user creating a cancellation request, cancelling a reservation and getting refund value"""
+        rental_unit = create_rental_unit(user=self.user)
+        rulebook = Rulebook.objects.create(rental_unit=rental_unit, cancellation_policy='Moderate')
+        
+        reservation = create_reservation(
+            user_id=self.user, 
+            rental_unit_id=rental_unit,
+            check_in=date(2023, 8, 1),
+            check_out=date(2023, 8, 10),
+        )
+        self.assertTrue(Reservation.objects.filter(id=reservation.id).exists())
+        
+        calendar_event = CalendarEvent.objects.create(
+            rental_unit=reservation.rental_unit,
+            reason='Reservation',
+            start_date=reservation.check_in,
+            end_date=reservation.check_out
+        )
+        self.assertTrue(CalendarEvent.objects.filter(id=calendar_event.id).exists())
+
+        payload = {
+            'user': self.user.id,
+            'reservation': reservation.id,
+        }
+        
+        result = self.client.post(CANCELLATION_REQUEST_URL, payload)
+        
+        self.assertTrue(result.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(CancellationRequest.objects.filter(reservation=reservation).exists())
+        
+        cancellation_request = CancellationRequest.objects.get(reservation=reservation)
+
+        self.assertEqual(cancellation_request.refund, 1)
+        self.assertEqual(Reservation.objects.get(id=reservation.id).status, False)
+        self.assertFalse(CalendarEvent.objects.filter(id=calendar_event.id).exists())
+        
+    def test_late_moderate_cancellation(self):
+        """test a user creating a cancellation request, cancelling a reservation and getting refund value"""
+        rental_unit = create_rental_unit(user=self.user)
+        rulebook = Rulebook.objects.create(rental_unit=rental_unit, cancellation_policy='Moderate')
+        
+        reservation = create_reservation(
+            user_id=self.user, 
+            rental_unit_id=rental_unit,
+            check_in=date(2023, 6, 19),
+            check_out=date(2023, 6, 25),
+        )
+        self.assertTrue(Reservation.objects.filter(id=reservation.id).exists())
+        
+        calendar_event = CalendarEvent.objects.create(
+            rental_unit=reservation.rental_unit,
+            reason='Reservation',
+            start_date=reservation.check_in,
+            end_date=reservation.check_out
+        )
+        self.assertTrue(CalendarEvent.objects.filter(id=calendar_event.id).exists())
+
+        payload = {
+            'user': self.user.id,
+            'reservation': reservation.id,
+        }
+        
+        result = self.client.post(CANCELLATION_REQUEST_URL, payload)
+        
+        self.assertTrue(result.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(CancellationRequest.objects.filter(reservation=reservation).exists())
+        
+        cancellation_request = CancellationRequest.objects.get(reservation=reservation)
+
+        self.assertEqual(cancellation_request.refund, 0.5)
+        self.assertEqual(Reservation.objects.get(id=reservation.id).status, False)
+        self.assertFalse(CalendarEvent.objects.filter(id=calendar_event.id).exists())
+        
+    def test_firm_cancellation(self):
+        """test a user creating a cancellation request, cancelling a reservation and getting refund value"""
+        rental_unit = create_rental_unit(user=self.user)
+        rulebook = Rulebook.objects.create(rental_unit=rental_unit, cancellation_policy='Firm')
+        
+        reservation = create_reservation(
+            user_id=self.user, 
+            rental_unit_id=rental_unit,
+            check_in=date(2023, 8, 19),
+            check_out=date(2023, 8, 25),
+        )
+        self.assertTrue(Reservation.objects.filter(id=reservation.id).exists())
+        
+        calendar_event = CalendarEvent.objects.create(
+            rental_unit=reservation.rental_unit,
+            reason='Reservation',
+            start_date=reservation.check_in,
+            end_date=reservation.check_out
+        )
+        self.assertTrue(CalendarEvent.objects.filter(id=calendar_event.id).exists())
+
+        payload = {
+            'user': self.user.id,
+            'reservation': reservation.id,
+        }
+        
+        result = self.client.post(CANCELLATION_REQUEST_URL, payload)
+        
+        self.assertTrue(result.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(CancellationRequest.objects.filter(reservation=reservation).exists())
+        
+        cancellation_request = CancellationRequest.objects.get(reservation=reservation)
+
+        self.assertEqual(cancellation_request.refund, 1)
+        self.assertEqual(Reservation.objects.get(id=reservation.id).status, False)
+        self.assertFalse(CalendarEvent.objects.filter(id=calendar_event.id).exists())
+        
+    def test_firm_cancellation_half_refund(self):
+        """test a user creating a cancellation request, cancelling a reservation and getting refund value"""
+        rental_unit = create_rental_unit(user=self.user)
+        rulebook = Rulebook.objects.create(rental_unit=rental_unit, cancellation_policy='Firm')
+        
+        reservation = create_reservation(
+            user_id=self.user, 
+            rental_unit_id=rental_unit,
+            check_in=date(2023, 6, 30),
+            check_out=date(2023, 7, 6),
+        )
+        self.assertTrue(Reservation.objects.filter(id=reservation.id).exists())
+        
+        calendar_event = CalendarEvent.objects.create(
+            rental_unit=reservation.rental_unit,
+            reason='Reservation',
+            start_date=reservation.check_in,
+            end_date=reservation.check_out
+        )
+        self.assertTrue(CalendarEvent.objects.filter(id=calendar_event.id).exists())
+
+        payload = {
+            'user': self.user.id,
+            'reservation': reservation.id,
+        }
+        
+        result = self.client.post(CANCELLATION_REQUEST_URL, payload)
+        
+        self.assertTrue(result.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(CancellationRequest.objects.filter(reservation=reservation).exists())
+        
+        cancellation_request = CancellationRequest.objects.get(reservation=reservation)
+
+        self.assertEqual(cancellation_request.refund, 0.5)
+        self.assertEqual(Reservation.objects.get(id=reservation.id).status, False)
+        self.assertFalse(CalendarEvent.objects.filter(id=calendar_event.id).exists())
+        
+    def test_firm_cancellation_no_refund(self):
+        """test a user creating a cancellation request, cancelling a reservation and getting refund value"""
+        rental_unit = create_rental_unit(user=self.user)
+        rulebook = Rulebook.objects.create(rental_unit=rental_unit, cancellation_policy='Firm')
+        
+        reservation = create_reservation(
+            user_id=self.user, 
+            rental_unit_id=rental_unit,
+            check_in=date(2023, 6, 19),
+            check_out=date(2023, 6, 25),
+        )
+        self.assertTrue(Reservation.objects.filter(id=reservation.id).exists())
+        
+        calendar_event = CalendarEvent.objects.create(
+            rental_unit=reservation.rental_unit,
+            reason='Reservation',
+            start_date=reservation.check_in,
+            end_date=reservation.check_out
+        )
+        self.assertTrue(CalendarEvent.objects.filter(id=calendar_event.id).exists())
+
+        payload = {
+            'user': self.user.id,
+            'reservation': reservation.id,
+        }
+        
+        result = self.client.post(CANCELLATION_REQUEST_URL, payload)
+        
+        self.assertTrue(result.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(CancellationRequest.objects.filter(reservation=reservation).exists())
+        
+        cancellation_request = CancellationRequest.objects.get(reservation=reservation)
+
+        self.assertEqual(cancellation_request.refund, 0)
+        self.assertEqual(Reservation.objects.get(id=reservation.id).status, False)
+        self.assertFalse(CalendarEvent.objects.filter(id=calendar_event.id).exists())
+        
+    def test_firm_cancellation_before_two_days(self):
+        """test a user creating a cancellation request, cancelling a reservation and getting refund value"""
+        rental_unit = create_rental_unit(user=self.user)
+        rulebook = Rulebook.objects.create(rental_unit=rental_unit, cancellation_policy='Firm')
+        
+        reservation = create_reservation(
+            user_id=self.user, 
+            rental_unit_id=rental_unit,
+            check_in=date(2023, 7, 3),
+            check_out=date(2023, 7, 8),
+        )
+        self.assertTrue(Reservation.objects.filter(id=reservation.id).exists())
+        
+        calendar_event = CalendarEvent.objects.create(
+            rental_unit=reservation.rental_unit,
+            reason='Reservation',
+            start_date=reservation.check_in,
+            end_date=reservation.check_out
+        )
+        self.assertTrue(CalendarEvent.objects.filter(id=calendar_event.id).exists())
+
+        payload = {
+            'user': self.user.id,
+            'reservation': reservation.id,
+        }
+        
+        result = self.client.post(CANCELLATION_REQUEST_URL, payload)
+        
+        self.assertTrue(result.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(CancellationRequest.objects.filter(reservation=reservation).exists())
+        
+        cancellation_request = CancellationRequest.objects.get(reservation=reservation)
+
+        self.assertEqual(cancellation_request.refund, 1)
+        self.assertEqual(Reservation.objects.get(id=reservation.id).status, False)
+        self.assertFalse(CalendarEvent.objects.filter(id=calendar_event.id).exists())
     
 class AdminCancellationRequestApiTests(TestCase):
     """tests for administrative API requests"""

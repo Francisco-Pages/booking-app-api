@@ -366,7 +366,9 @@ CANCELLATION_CHOICES = (
     ('Moderate', 'moderate'),
     ('Firm', 'firm'),
     ('Strict', 'strict'),
-    ('Long Term', 'long Term'),
+    ('Firm Long Term', 'firm long Term'),
+    ('Strict Long Term', 'strict long Term'),
+    ('Super Strict 30', 'super strict 30'),
     ('Non-refundable', 'non-refundable'),
 )
 
@@ -374,7 +376,7 @@ CANCELLATION_CHOICES = (
 class Rulebook(models.Model):
     """a rule book for a rental unit"""
     rental_unit = models.OneToOneField(RentalUnit, primary_key=True, on_delete=models.CASCADE)
-    cancellation_policy = models.CharField(max_length=50, choices=CANCELLATION_CHOICES, blank=True)
+    cancellation_policy = models.CharField(max_length=50, choices=CANCELLATION_CHOICES, default='Flexible')
     house_rules = models.TextField(blank=True)
     pets_allowed = models.BooleanField(default=False)
     events_allowed = models.BooleanField(default=False)
@@ -451,7 +453,8 @@ class Reservation(models.Model):
     nights = models.IntegerField(null=True) 
     night_price = models.DecimalField(max_digits=8, decimal_places=2, null=True)
     subtotal = models.DecimalField(max_digits=8, decimal_places=2, null=True)
-    taxes = models.DecimalField(max_digits=3, 
+    taxes = models.DecimalField(
+        max_digits=3, 
         decimal_places=2, 
         null=True, 
         validators=[
@@ -460,6 +463,7 @@ class Reservation(models.Model):
         ]
     )
     total = models.DecimalField(max_digits=8, decimal_places=2, null=True)
+    status = models.BooleanField(default=True)
     creation_date = models.DateTimeField(auto_now_add=True)
     
     # def get_nightly_subtotal(self):
@@ -479,6 +483,14 @@ class CancellationRequest(models.Model):
     status = models.BooleanField(default=False)
     creation_date = models.DateTimeField(auto_now_add=True)
     reason = models.TextField(blank=True)
-    refund = models.DecimalField(max_digits=8, decimal_places=2, null=True)
+    refund = models.DecimalField(
+        max_digits=3, 
+        decimal_places=2, 
+        null=True, 
+        validators=[
+            MinValueValidator(0),
+            MaxValueValidator(1)
+        ]                            
+    )
     
     
