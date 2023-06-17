@@ -386,17 +386,27 @@ class CancellationRequestViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.CancellationRequestDetailSerializer
     queryset = CancellationRequest.objects.all()
     authentication_classes = [TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly, permissions.DjangoModelPermissionsOrAnonReadOnly]
+    permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
         """retrieve Cancellation Requests for authenticated users"""
         user = self.request.user
         # if user.is_staff == True:
         #     return self.queryset.all().order_by('-check_in')
-        return self.queryset.filter(user=user.id).order_by('-creation_date')   
+        return self.queryset.filter(user=user).order_by('-creation_date')   
     
     def get_serializer_class(self):
         """returns serializer class for request"""
         if self.action == 'list':
             return serializers.CancellationRequestSerializer
         return self.serializer_class
+    
+    def perform_update(self, serializer):
+        user = self.request.user
+        
+        if user.is_staff == False:
+            raise drf_serializers.ValidationError(
+                'Not authorized to update a cancellation request'
+            )
+        else:
+            serializer.save()

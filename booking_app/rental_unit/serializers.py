@@ -350,6 +350,7 @@ class ReservationRequestSerializer(serializers.ModelSerializer):
                 user=reservation_request.user,
                 check_in=reservation_request.check_in,
                 check_out=reservation_request.check_out,
+                days=stay_length,
                 night_price=pricing.night_price,
                 subtotal=subtotal,
                 taxes=pricing.tax,
@@ -443,6 +444,12 @@ class CancellationRequestSerializer(serializers.ModelSerializer):
         model = CancellationRequest
         fields = '__all__'
         read_only_fields = ['id']
+        
+    def create(self, validated_data):
+        """create a return reservation request"""
+        cancellation_request = CancellationRequest.objects.create(**validated_data)
+        
+        return cancellation_request
         
         
 class CancellationRequestDetailSerializer(CancellationRequestSerializer):

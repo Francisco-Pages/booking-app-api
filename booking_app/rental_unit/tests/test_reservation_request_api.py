@@ -460,6 +460,37 @@ class PrivateReservationRequestApiTests(TestCase):
         subtotal = nights * np
         self.assertEqual(reservation.subtotal, subtotal)
         
+    def test_get_total_days(self):
+        """test getting the nightly subtotal for a reservation"""
+        rental_unit = create_rental_unit(user=self.user)
+        availability = Availability.objects.create(rental_unit=rental_unit, instant_booking=True)
+        np = Decimal(100)
+        ci = date(2023, 9, 15)
+        co = date(2023, 9, 21)
+        pricing = Pricing.objects.create(
+            rental_unit=rental_unit, 
+            night_price=np
+        )
+        
+        payload = {
+            'rental_unit': rental_unit.id,
+            'user': self.user.id,
+            'check_in': ci,
+            'check_out': co
+        }
+        result = self.client.post(RESERVATION_REQUEST_URL, payload)
+        
+        self.assertEqual(result.status_code, status.HTTP_201_CREATED)
+        
+        reservation = Reservation.objects.filter(
+            check_in=payload['check_in'],
+            check_out=payload['check_out']
+        )[0]
+        
+        delta = co - ci
+        nights = delta.days
+        self.assertEqual(reservation.nights, nights)
+        
         
 class AdminReservationRequestApiTests(TestCase):
     """tests for administrative users"""

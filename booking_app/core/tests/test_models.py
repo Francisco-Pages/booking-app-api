@@ -220,6 +220,7 @@ class ModelTest(TestCase):
         )
         
         cancellation_request = models.CancellationRequest.objects.create(
+            user=guest,
             reservation=reservation,
         )
         

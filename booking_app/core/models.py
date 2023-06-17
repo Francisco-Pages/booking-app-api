@@ -448,6 +448,7 @@ class Reservation(models.Model):
     )
     check_in = models.DateField()
     check_out = models.DateField() 
+    nights = models.IntegerField(null=True) 
     night_price = models.DecimalField(max_digits=8, decimal_places=2, null=True)
     subtotal = models.DecimalField(max_digits=8, decimal_places=2, null=True)
     taxes = models.DecimalField(max_digits=3, 
@@ -470,6 +471,10 @@ class Reservation(models.Model):
 
 class CancellationRequest(models.Model):
     """a user request to cancel a confirmed reservation"""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
     reservation = models.OneToOneField(Reservation, on_delete=models.CASCADE)
     status = models.BooleanField(default=False)
     creation_date = models.DateTimeField(auto_now_add=True)
