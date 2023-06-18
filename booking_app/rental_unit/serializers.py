@@ -470,7 +470,10 @@ class CancellationRequestSerializer(serializers.ModelSerializer):
         cancellation_policy = rulebook.cancellation_policy
         
         delta = reservation.check_in - cancellation_request.creation_date.date()
-        time_since_reservation = (now - cancellation_request.creation_date.date()).days
+        time_since_reservation = (
+            now - cancellation_request.creation_date.date()
+        ).days
+        
         # if cancellation occurs the day of check in
         if delta == 0:
             cancellation_request.refund = 0
@@ -537,9 +540,86 @@ class CancellationRequestSerializer(serializers.ModelSerializer):
             
             return cancellation_request
         
+        if cancellation_policy == 'Strict':
+            if delta.days >= 14 and time_since_reservation < 2:
+                cancellation_request.refund = 1
+            if delta.days >= 7 and delta.days < 14:
+                cancellation_request.refund = 0.5
+            if delta.days < 7:
+                cancellation_request.refund = 0
+            reservation.status = False
+            CalendarEvent.objects.filter(
+                rental_unit=reservation.rental_unit,
+                start_date=reservation.check_in,
+                end_date=reservation.check_out
+            ).delete()
+            reservation.save()
+            cancellation_request.save()
+            
+            return cancellation_request
         
+        if cancellation_policy == 'Firm Long Term' and reservation.nights >= 28:
+            if delta.days >= 30:
+                cancellation_request.refund = 1
+            if delta.days < 30:
+                cancellation_request.refund = 0
+            reservation.status = False
+            CalendarEvent.objects.filter(
+                rental_unit=reservation.rental_unit,
+                start_date=reservation.check_in,
+                end_date=reservation.check_out
+            ).delete()
+            reservation.save()
+            cancellation_request.save()
+            
+            return cancellation_request
         
+        if cancellation_policy == 'Strict Long Term' and reservation.nights >= 28:
+            if delta.days >= 28 and time_since_reservation < 2:
+                cancellation_request.refund = 1
+            if delta.days < 28:
+                cancellation_request.refund = 0
+            reservation.status = False
+            CalendarEvent.objects.filter(
+                rental_unit=reservation.rental_unit,
+                start_date=reservation.check_in,
+                end_date=reservation.check_out
+            ).delete()
+            reservation.save()
+            cancellation_request.save()
+            
+            return cancellation_request
         
+        if cancellation_policy == 'Non-refundable':
+            cancellation_request.refund = 0
+            reservation.status = False
+            CalendarEvent.objects.filter(
+                rental_unit=reservation.rental_unit,
+                start_date=reservation.check_in,
+                end_date=reservation.check_out
+            ).delete()
+            reservation.save()
+            cancellation_request.save()
+            
+            return cancellation_request
+        
+        if cancellation_policy == 'Super Strict 30':
+            if delta.days >= 30:
+                cancellation_request.refund = 0.5
+            if delta.days < 30:
+                cancellation_request.refund = 0
+            reservation.status = False
+            CalendarEvent.objects.filter(
+                rental_unit=reservation.rental_unit,
+                start_date=reservation.check_in,
+                end_date=reservation.check_out
+            ).delete()
+            reservation.save()
+            cancellation_request.save()
+            
+            return cancellation_request
+        
+
 class CancellationRequestDetailSerializer(CancellationRequestSerializer):
     """Serializer for CancellationRequest detail view"""
     
