@@ -493,4 +493,15 @@ class CancellationRequest(models.Model):
         ]                            
     )
     
+class ChangeRequest(models.Model):
+    """a user request to cancel a confirmed reservation"""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE)
+    status = models.BooleanField(default=False)
+    creation_date = models.DateTimeField(auto_now_add=True)
+    nights_diff = models.IntegerField(null=True)
+    
     

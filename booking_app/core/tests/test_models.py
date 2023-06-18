@@ -1,7 +1,7 @@
 """
 Tests for models
 """
-from datetime import date, timezone
+from datetime import datetime, date, timezone, timedelta
 
 from decimal import Decimal
 
@@ -10,6 +10,7 @@ from django.contrib.auth import get_user_model
 
 from core import models
 
+now = datetime.now().date()
 
 def create_user(**params):
     """create and return a new user"""
@@ -215,8 +216,8 @@ class ModelTest(TestCase):
         reservation = models.Reservation.objects.create(
             rental_unit=rental_unit, 
             user=guest,
-            check_in=date(2023,6,20),
-            check_out=date(2023,6,28)
+            check_in=now + timedelta(days=14),
+            check_out=now + timedelta(days=21)
         )
         
         cancellation_request = models.CancellationRequest.objects.create(
@@ -225,3 +226,25 @@ class ModelTest(TestCase):
         )
         
         self.assertTrue(models.CancellationRequest.objects.filter(id=cancellation_request.id).exists())
+        
+    def test_create_change_request(self):
+        """test creating a reservation cancellation request"""
+        host = create_superuser(email='test@example.com', password='test1234')
+        rental_unit = models.RentalUnit.objects.create(user=host, title="a new home for rent")
+        guest = create_user(email='guest@example.com', password='password123')
+        
+        reservation = models.Reservation.objects.create(
+            rental_unit=rental_unit, 
+            user=guest,
+            check_in=now + timedelta(days=14),
+            check_out=now + timedelta(days=21)
+        )
+        
+        change_request = models.ChangeRequest.objects.create(
+            user=guest,
+            reservation=reservation,
+        )
+        
+        self.assertTrue(models.ChangeRequest.objects.filter(id=change_request.id).exists())
+        
+        
