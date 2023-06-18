@@ -243,6 +243,8 @@ class ModelTest(TestCase):
         change_request = models.ChangeRequest.objects.create(
             user=guest,
             reservation=reservation,
+            new_check_in=now + timedelta(days=15),
+            new_check_out=now + timedelta(days=22)
         )
         
         self.assertTrue(models.ChangeRequest.objects.filter(id=change_request.id).exists())

@@ -500,6 +500,8 @@ class ChangeRequest(models.Model):
         on_delete=models.CASCADE,
     )
     reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE)
+    new_check_in = models.DateField()
+    new_check_out = models.DateField()
     status = models.BooleanField(default=False)
     creation_date = models.DateTimeField(auto_now_add=True)
     nights_diff = models.IntegerField(null=True)

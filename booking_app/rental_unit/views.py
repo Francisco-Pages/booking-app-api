@@ -22,7 +22,8 @@ from core.models import (
     Place,
     ReservationRequest,
     Reservation,
-    CancellationRequest
+    CancellationRequest,
+    ChangeRequest
 )
 from rental_unit import serializers
 
@@ -399,6 +400,37 @@ class CancellationRequestViewSet(viewsets.ModelViewSet):
         """returns serializer class for request"""
         if self.action == 'list':
             return serializers.CancellationRequestSerializer
+        return self.serializer_class
+    
+    def perform_update(self, serializer):
+        user = self.request.user
+        
+        if user.is_staff == False:
+            raise drf_serializers.ValidationError(
+                'Not authorized to update a cancellation request'
+            )
+        else:
+            serializer.save()
+            
+            
+class ChangeRequestViewSet(viewsets.ModelViewSet):
+    """view for manage the change request for the rental unit APIs"""
+    serializer_class = serializers.ChangeRequestDetailSerializer
+    queryset = ChangeRequest.objects.all()
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        """retrieve Cancellation Requests for authenticated users"""
+        user = self.request.user
+        # if user.is_staff == True:
+        #     return self.queryset.all().order_by('-check_in')
+        return self.queryset.filter(user=user).order_by('-creation_date')   
+    
+    def get_serializer_class(self):
+        """returns serializer class for request"""
+        if self.action == 'list':
+            return serializers.ChangeRequestSerializer
         return self.serializer_class
     
     def perform_update(self, serializer):

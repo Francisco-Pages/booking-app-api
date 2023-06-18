@@ -18,7 +18,8 @@ from core.models import (
     Place,
     ReservationRequest,
     Reservation,
-    CancellationRequest
+    CancellationRequest,
+    ChangeRequest
 )
 
 from rest_framework import serializers as drf_serializers
@@ -625,3 +626,19 @@ class CancellationRequestDetailSerializer(CancellationRequestSerializer):
     
     class Meta(CancellationRequestSerializer.Meta):
         fields = CancellationRequestSerializer.Meta.fields
+        
+        
+class ChangeRequestSerializer(serializers.ModelSerializer):
+    """Serializer for a Change Requests"""
+
+    class Meta:
+        model = ChangeRequest
+        fields = '__all__'
+        read_only_fields = ['id']
+        
+
+class ChangeRequestDetailSerializer(ChangeRequestSerializer):
+    """Serializer for ChangeRequest detail view"""
+    
+    class Meta(ChangeRequestSerializer.Meta):
+        fields = ChangeRequestSerializer.Meta.fields
