@@ -412,6 +412,15 @@ class CancellationRequestViewSet(viewsets.ModelViewSet):
         else:
             serializer.save()
             
+    def perform_destroy(self, instance):
+        
+        if instance.status == True:
+            raise drf_serializers.ValidationError(
+                'Not authorized to delete this cancellation request'
+            )
+        else:
+            instance.delete()
+            
             
 class ChangeRequestViewSet(viewsets.ModelViewSet):
     """view for manage the change request for the rental unit APIs"""
@@ -438,7 +447,15 @@ class ChangeRequestViewSet(viewsets.ModelViewSet):
         
         if user.is_staff == False:
             raise drf_serializers.ValidationError(
-                'Not authorized to update a cancellation request'
+                'Cannot update a change request'
             )
         else:
             serializer.save()
+            
+    def perform_destroy(self, instance):
+        if instance.status == True:
+            raise drf_serializers.ValidationError(
+                'Not authorized to delete this change request'
+            )
+        else:
+            instance.delete()

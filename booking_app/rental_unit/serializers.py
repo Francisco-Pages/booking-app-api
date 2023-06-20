@@ -636,6 +636,135 @@ class ChangeRequestSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['id']
         
+    def validate(self, data):
+        # check if request is PATCH
+        instance_id = False
+        if 'PATCH' in str(self.context):
+            mystr = str(self.context['request'])
+            start_of = mystr.index('change_requests/') + 16
+            instance_id = mystr[start_of:-3]
+            change_request = ChangeRequest.objects.get(id=instance_id)
+            if 'user' not in data:
+                data['user'] = change_request.user
+            if 'reservation' not in data:
+                data['reservation'] = change_request.reservation
+            if 'new_check_in' not in data:
+                data['new_check_in'] = change_request.new_check_in
+            if 'new_check_out' not in data:
+                data['new_check_out'] = change_request.new_check_out
+        if 'reservation' not in data:
+            raise drf_serializers.ValidationError('Error: please enter a reservation to change')
+        if 'user' not in data:
+            raise drf_serializers.ValidationError('Error: enter user')
+        if 'new_check_in' not in data and 'new_check_out' not in data:
+            raise drf_serializers.ValidationError('Error: please enter new dates')
+        
+        # check if user making the change request == user in the reservation
+        reservation = Reservation.objects.get(id=data['reservation'].id)
+        
+        if data['user'] != reservation.user:
+            raise drf_serializers.ValidationError('Error: unauthorized request')
+        if reservation.status == False:
+            raise drf_serializers.ValidationError('Error: reservation does not exist')
+        
+        """check that check in and check out dates are given"""
+        
+        if data['new_check_in'] <= now:
+            raise drf_serializers.ValidationError("Error: let go of the past. forget it. she doesn't want you.")
+        
+        """check that check in date is not on or before check out date"""
+        if data['new_check_in'] >= data['new_check_out']:
+            raise drf_serializers.ValidationError('Check in date cannot be on or before check out date, please choose another date.')
+        
+        """check that the chosen dates are available"""
+        reservaton_list = Reservation.objects.filter(rental_unit=reservation.rental_unit).exclude(status=False).exclude(id=reservation.id)
+        availability = Availability.objects.get(rental_unit=reservation.rental_unit)
+        prep = timedelta(days=availability.prep_time)
+        
+        new_check_in = data['new_check_in']
+        new_check_out = data['new_check_out']
+        
+        """check that a new reservation does not overlap with an existing reservation"""
+        for reservation in reservaton_list:
+            if new_check_in < reservation.check_out + prep and new_check_in >= reservation.check_in or \
+                new_check_out <= reservation.check_out and new_check_out > reservation.check_in + prep or \
+                new_check_in <= reservation.check_in and new_check_out >= reservation.check_out:
+                
+                raise drf_serializers.ValidationError(f'Sorry, the dates you have chosen are not available, there is another reservation from {reservation.check_in} to {reservation.check_out}')
+        
+        """check that the the dates chosen for a reservation are not blocked"""
+        calendar_event_list = CalendarEvent.objects.filter(rental_unit=reservation.rental_unit).exclude(
+            start_date=reservation.check_in,
+            end_date=reservation.check_out
+        )
+        for event in calendar_event_list:
+            if new_check_in < event.end_date + prep and new_check_in >= event.start_date or \
+                new_check_out <= event.end_date and new_check_out > event.start_date + prep or \
+                new_check_in <= event.start_date and new_check_out >= event.end_date:
+
+                raise drf_serializers.ValidationError(f'Sorry, the dates you have chosen are not available, there is another reservation from {event.start_date} to {event.end_date}')
+
+        """check that the reservation length is within the boundaries set by the rental unit owner"""
+        
+        delta = new_check_out - new_check_in
+        
+        if delta.days < availability.min_stay:
+            raise drf_serializers.ValidationError(f'Reservation must be longer than {availability.min_stay}')
+        if delta.days > availability.max_stay:
+            raise drf_serializers.ValidationError(f'Reservation must be shorter than {availability.max_stay}') 
+        
+        """check that a reservation is made within the notice boundaries set by the rental unit owner"""
+        delta = new_check_in - now
+        
+        if delta.days < availability.min_notice:
+            raise drf_serializers.ValidationError(f'Reservation must be made at least {availability.min_notice} days before check in date.')
+        if delta.days > availability.max_notice:
+            raise drf_serializers.ValidationError(f'Reservation must be made at most {availability.max_notice} days before check in date.')
+        
+        
+        return data
+    
+    def create(self, validated_data):
+        """create a return reservation request"""
+        change_request = ChangeRequest.objects.create(**validated_data)
+        return change_request
+    
+    def update(self, instance, validated_data):
+        
+        instance.user = validated_data.get('user', instance.user)
+        instance.reservation = validated_data.get('reservation', instance.reservation)
+        instance.new_check_in = validated_data.get('new_check_in', instance.new_check_in)
+        instance.new_check_out = validated_data.get('new_check_out', instance.new_check_out)
+
+        if 'status' in validated_data and validated_data['status'] == True:
+            reservation = Reservation.objects.get(id=instance.reservation.id)
+            pricing = Pricing.objects.get(rental_unit=instance.reservation.rental_unit)
+            stay_length = (instance.new_check_out - instance.new_check_in).days
+            subtotal = pricing.night_price * stay_length
+            total = subtotal + (subtotal * pricing.tax)
+            
+            Reservation.objects.filter(id=instance.reservation.id).update(
+                check_in=instance.new_check_in,
+                check_out=instance.new_check_out,
+                nights=stay_length,
+                night_price=pricing.night_price,
+                subtotal=subtotal,
+                taxes=pricing.tax,
+                total=total 
+            )
+            CalendarEvent.objects.filter(
+                rental_unit=reservation.rental_unit,
+                start_date=reservation.check_in,
+                end_date=reservation.check_out,
+            ).update(
+                start_date=instance.new_check_in,
+                end_date=instance.new_check_out,
+            )
+            
+            instance.status = validated_data.get('status', instance.status)
+        instance.save()
+        
+        return instance
 
 class ChangeRequestDetailSerializer(ChangeRequestSerializer):
     """Serializer for ChangeRequest detail view"""

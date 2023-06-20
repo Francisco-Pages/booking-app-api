@@ -504,6 +504,5 @@ class ChangeRequest(models.Model):
     new_check_out = models.DateField()
     status = models.BooleanField(default=False)
     creation_date = models.DateTimeField(auto_now_add=True)
-    nights_diff = models.IntegerField(null=True)
     
     
