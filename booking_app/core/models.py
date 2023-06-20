@@ -19,7 +19,7 @@ def rental_unit_image_file_path(instance, filename):
     ext = os.path.splitext(filename)[1]
     filename = f'{uuid.uuid4()}{ext}'
 
-    return os.path.join('uploads', 'rental_unit', filename)
+    return os.path.join('uploads', 'rentalunit', filename)
 
 class UserManager(BaseUserManager):
     """Manager for users."""
@@ -76,7 +76,7 @@ class RentalUnit(models.Model):
     link = models.CharField(max_length=255, blank=True)
     languages = models.CharField(max_length=255, default='en,')
     status = models.BooleanField(default=True)
-    images = models.ImageField(null=True, upload_to=rental_unit_image_file_path)
+    image = models.ImageField(null=True, upload_to=rental_unit_image_file_path)
     unit_type = models.CharField(max_length=30, choices=UNIT_CHOICES, default='hotel')
     max_guests = models.IntegerField(default=1)
     

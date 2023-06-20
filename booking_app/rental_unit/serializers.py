@@ -19,7 +19,7 @@ from core.models import (
     ReservationRequest,
     Reservation,
     CancellationRequest,
-    ChangeRequest
+    ChangeRequest,
 )
 
 from rest_framework import serializers as drf_serializers
@@ -771,3 +771,14 @@ class ChangeRequestDetailSerializer(ChangeRequestSerializer):
     
     class Meta(ChangeRequestSerializer.Meta):
         fields = ChangeRequestSerializer.Meta.fields
+        
+        
+class RentalUnitImageSerializer(serializers.ModelSerializer):
+    """serializer for uploading images"""
+    
+    class Meta:
+        model = RentalUnit
+        fields = ['id', 'image']
+        read_only_fields = ['id']
+        extra_kwargs = {'image': {'required': 'True'}}
+        

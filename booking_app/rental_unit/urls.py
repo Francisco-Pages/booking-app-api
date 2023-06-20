@@ -23,7 +23,7 @@ router.register('places', views.PlaceViewSet)
 router.register('reservation_requests', views.ReservationRequestViewSet)
 router.register('reservations', views.ReservationViewSet)
 router.register('cancellation_requests', views.CancellationRequestViewSet)
-router.register('change_requests', views.ChangeRequestViewSet)
+router.register('change_requests', views.ChangeRequestViewSet),
 
 
 app_name = 'rental_unit'

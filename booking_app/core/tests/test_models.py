@@ -77,7 +77,7 @@ class ModelTest(TestCase):
             link='https://www.rental-unit.com/',
             languages='fra',
             status=False,
-            images='images of don pedro',
+            image='images-don-pedro',
             unit_type='apartment',
             max_guests=6,
         )

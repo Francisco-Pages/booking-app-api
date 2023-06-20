@@ -2,6 +2,10 @@
 tests for rental unit API
 """
 from decimal import Decimal
+import tempfile
+import os
+
+from PIL import Image
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -20,11 +24,14 @@ from rental_unit.serializers import (
 
 RENTAL_UNIT_URL = reverse('rental_unit:rentalunit-list')
 
-
 ## HELPER FUNCTIONS
 def detail_url(rental_unit_id):
     """create and return a detailed rental unit URL"""
     return reverse('rental_unit:rentalunit-detail', args=[rental_unit_id])
+
+def image_upload_url(rental_unit_id):
+    """create and return an image upload URL"""
+    return reverse('rental_unit:rentalunit-upload-image', args=[rental_unit_id])
 
 def create_rental_unit(user, **params):
     """create and return a rental unit object"""
@@ -161,6 +168,7 @@ class PrivateRentalUnitApiTests(TestCase):
             'images': 'NEW images',
             'unit_type': 'Hotel',
             'max_guests': 1,
+            'image': ''
         }
         url = detail_url(rental_unit.id)
         result = self.client.put(url, payload)
@@ -255,6 +263,7 @@ class AdminRentalUnitApiTests(TestCase):
             'images': 'NEW images',
             'unit_type': 'Hotel',
             'max_guests': 1,
+            'image': ''
         }
         url = detail_url(rental_unit.id)
         result = self.client.put(url, payload)
@@ -270,3 +279,41 @@ class AdminRentalUnitApiTests(TestCase):
 
         self.assertEqual(result.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(RentalUnit.objects.filter(id=rental_unit.id).exists())
+        
+        
+class ImageUploadTests(TestCase):
+    """tests for image upload API"""
+    
+    def setUp(self):
+        self.client = APIClient()
+        self.user = create_superuser(
+            email='testadmin@example.com',
+            password='testpass123'
+        )
+        self.client.force_authenticate(user=self.user)
+        self.rental_unit = create_rental_unit(user=self.user)
+        
+    def tearDown(self):
+        self.rental_unit.image.delete()
+        
+    def test_upload_image(self):
+        url = image_upload_url(self.rental_unit.id)
+        with tempfile.NamedTemporaryFile(suffix='.jpg') as image_file:
+            img = Image.new('RGB', (10, 10))
+            img.save(image_file, format='JPEG')
+            image_file.seek(0)
+            payload = {'image': image_file}
+            res = self.client.post(url, payload, format='multipart')
+            
+        self.rental_unit.refresh_from_db()
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn('image', res.data)
+        self.assertTrue(os.path.exists(self.rental_unit.image.path))
+        
+    def test_upload_image_bad_request(self):
+        url = image_upload_url(self.rental_unit.id)
+
+        payload = {'image': 'notanimage'}
+        res = self.client.post(url, payload, format='multipart')
+            
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
