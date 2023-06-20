@@ -3,6 +3,7 @@ Tests for models
 """
 from datetime import datetime, date, timezone, timedelta
 
+from unittest.mock import patch
 from decimal import Decimal
 
 from django.test import TestCase
@@ -249,4 +250,9 @@ class ModelTest(TestCase):
         
         self.assertTrue(models.ChangeRequest.objects.filter(id=change_request.id).exists())
         
-        
+    @patch('core.models.uuid.uuid4')
+    def test_rental_unit_file_name_uuid(self, mock_uuid):
+        """Test generating image path"""
+        uuid = 'test-uuid'
+        mock_uuid.return_value = uuid
+        file_path = models.rental_unit_image_file_path(None, 'example.jpg')
