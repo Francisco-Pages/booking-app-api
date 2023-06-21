@@ -305,6 +305,7 @@ class ImageUploadTests(TestCase):
             payload = {'image': image_file}
             res = self.client.post(url, payload, format='multipart')
             
+
         self.rental_unit.refresh_from_db()
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertIn('image', res.data)

@@ -26,6 +26,7 @@ from core.models import (
     Reservation,
     CancellationRequest,
     ChangeRequest,
+    Photo
 )
 from rental_unit import serializers
 
@@ -474,3 +475,34 @@ class ChangeRequestViewSet(viewsets.ModelViewSet):
             )
         else:
             instance.delete()
+            
+            
+class PhotoViewSet(viewsets.ModelViewSet):
+    """view for manage the Image for the rental unit APIs"""
+    serializer_class = serializers.PhotoDetailSerializer
+    queryset = Photo.objects.all()
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, permissions.DjangoModelPermissionsOrAnonReadOnly]
+    
+    def get_queryset(self):
+        """retrieve RentalUnit for authenticated users"""
+        return self.queryset.all().order_by('-id')
+    
+    def get_serializer_class(self):
+        """returns serializer class for request"""
+        if self.action == 'list':
+            return serializers.PhotoDetailSerializer
+        if self.action == 'upload_image':
+            return serializers.PhotoImageSerializer
+        return self.serializer_class
+
+    @action(methods=['POST'], detail=True, url_path='upload-image')
+    def upload_image(self, request, pk=None):
+        photo = self.get_object()
+        serializer = self.get_serializer(photo, data=request.data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+    
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

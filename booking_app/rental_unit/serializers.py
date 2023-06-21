@@ -20,6 +20,7 @@ from core.models import (
     Reservation,
     CancellationRequest,
     ChangeRequest,
+    Photo
 )
 
 from rest_framework import serializers as drf_serializers
@@ -782,3 +783,32 @@ class RentalUnitImageSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
         extra_kwargs = {'image': {'required': 'True'}}
         
+        
+class PhotoSerializer(serializers.ModelSerializer):
+    """serializer for rental unit"""
+    class Meta:
+        model = Photo
+        fields = '__all__'
+        read_only_fields = ['id']
+        
+    def create(self, validated_data):
+        """create a return reservation request"""
+        photo = Photo.objects.create(**validated_data)
+        return photo
+        
+        
+class PhotoDetailSerializer(PhotoSerializer):
+    """Serializer for photo detail view"""
+    
+    class Meta(PhotoSerializer.Meta):
+        fields = PhotoSerializer.Meta.fields
+        
+        
+class PhotoImageSerializer(serializers.ModelSerializer):
+    """serializer for uploading photos"""
+    
+    class Meta:
+        model = Photo
+        fields = ['id', 'image', 'name']
+        read_only_fields = ['id']
+        extra_kwargs = {'image': {'required': 'True'}}

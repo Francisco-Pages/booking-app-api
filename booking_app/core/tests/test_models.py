@@ -256,3 +256,10 @@ class ModelTest(TestCase):
         uuid = 'test-uuid'
         mock_uuid.return_value = uuid
         file_path = models.rental_unit_image_file_path(None, 'example.jpg')
+        
+    @patch('core.models.uuid.uuid4')
+    def test_photo_file_name_uuid(self, mock_uuid):
+        """Test generating image path"""
+        uuid = 'test-uuid'
+        mock_uuid.return_value = uuid
+        file_path = models.photo_file_path(None, 'example.jpg')

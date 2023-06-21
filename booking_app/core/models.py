@@ -21,6 +21,13 @@ def rental_unit_image_file_path(instance, filename):
 
     return os.path.join('uploads', 'rentalunit', filename)
 
+def photo_file_path(instance, filename):
+    """Generate file path for new image"""
+    ext = os.path.splitext(filename)[1]
+    filename = f'{uuid.uuid4()}{ext}'
+
+    return os.path.join('uploads', 'image', filename)
+
 class UserManager(BaseUserManager):
     """Manager for users."""
     
@@ -514,3 +521,7 @@ class ChangeRequest(models.Model):
     creation_date = models.DateTimeField(auto_now_add=True)
     
     
+class Photo(models.Model):
+    rental_unit = models.ForeignKey(RentalUnit, on_delete=models.CASCADE, null=True)
+    image = models.ImageField(null=True, upload_to=photo_file_path)
+    name = models.CharField(max_length=255, blank=True)
