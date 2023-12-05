@@ -43,9 +43,11 @@ INSTALLED_APPS = [
     'core',
     'user',
     'rental_unit',
+    'payments',
     'rest_framework',
     'rest_framework.authtoken',
     'drf_spectacular',
+    'phonenumber_field'
 ]
 
 MIDDLEWARE = [
@@ -147,3 +149,6 @@ REST_FRAMEWORK = {
 SPECTACULAR_SETTINGS = {
     'COMPONENT_SPLIT_REQUEST': True,
 }
+
+
+STRIPE_SECRET_KEY = 'sk_test_51NL7quGUEUxNYBQMBDjg15i1SvVAOsN4oo3EXJLqZ7luTuKunfXC5ggM6HdMA7zxR5gAgfXf1mGoKSubJaY9zMSg00aFkSvYla'

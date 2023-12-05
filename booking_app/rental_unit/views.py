@@ -491,7 +491,7 @@ class PhotoViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         """returns serializer class for request"""
         if self.action == 'list':
-            return serializers.PhotoDetailSerializer
+            return serializers.PhotoSerializer
         if self.action == 'upload_image':
             return serializers.PhotoImageSerializer
         return self.serializer_class

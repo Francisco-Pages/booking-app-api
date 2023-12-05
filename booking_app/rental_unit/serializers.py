@@ -809,6 +809,6 @@ class PhotoImageSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Photo
-        fields = ['id', 'image', 'name']
+        fields = ['id','image', 'name']
         read_only_fields = ['id']
         extra_kwargs = {'image': {'required': 'True'}}

@@ -14,6 +14,8 @@ from django.contrib.auth.models import (
 )
 from django.core.validators import MinValueValidator, MaxValueValidator
 
+from phonenumber_field.modelfields import PhoneNumberField
+
 def rental_unit_image_file_path(instance, filename):
     """Generate file path for new rental unit image"""
     ext = os.path.splitext(filename)[1]
@@ -55,6 +57,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     """User in the system."""
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
+    phone_number = PhoneNumberField(max_length=20, blank=True, unique=True)
+    city = models.CharField(max_length=255, blank=True)
+    address_line1 = models.CharField(max_length=255, blank=True)
+    address_line2 = models.CharField(max_length=255, blank=True)
+    postal_code = models.CharField(max_length=255, blank=True)
+    state = models.CharField(max_length=255, blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     # is_superuser = models.BooleanField(default=False)
@@ -287,9 +295,9 @@ class Room(models.Model):
     accessible = models.BooleanField(default=False)
     
 CURRENCY_CHOICES = (
-    ('USD', 'USD'),
-    ('GBP', 'GBP'),
-    ('YEN', 'YEN'),
+    ('usd', 'usd'),
+    ('gbp', 'gbp'),
+    ('yen', 'yen'),
 )
 
 class Pricing(models.Model):
@@ -299,7 +307,7 @@ class Pricing(models.Model):
     smart_pricing = models.BooleanField(default=False)
     min_price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     max_price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
-    currency = models.CharField(max_length=30, choices=CURRENCY_CHOICES, default='USD')
+    currency = models.CharField(max_length=30, choices=CURRENCY_CHOICES, default='usd')
     week_discount = models.IntegerField(default=0)
     month_discount = models.IntegerField(default=0)
     tax = models.DecimalField(max_digits=5, decimal_places=2, default=0)
@@ -525,3 +533,13 @@ class Photo(models.Model):
     rental_unit = models.ForeignKey(RentalUnit, on_delete=models.CASCADE, null=True)
     image = models.ImageField(null=True, upload_to=photo_file_path)
     name = models.CharField(max_length=255, blank=True)
+    
+    
+class Payment(models.Model):
+    customer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    amount = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    currency = models.CharField(max_length=30, default='usd')
+    secret_id = models.CharField(max_length=255, blank=True)

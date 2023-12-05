@@ -69,20 +69,16 @@ class PhotoUploadTests(TestCase):
         )
         
     def tearDown(self):
-        self.photo.delete()
+        self.photo.image.delete()
         
     def test_upload_image(self):
-        rental_unit_one = create_rental_unit(user=self.user)
-        rental_unit_two = create_rental_unit(user=self.user)
-        rental_unit_one.refresh_from_db()
-        rental_unit_two.refresh_from_db()
         url = photo_upload_url(self.photo.id)
         with tempfile.NamedTemporaryFile(suffix='.jpg') as image_file:
             img = Image.new('RGB', (10, 10))
             img.save(image_file, format='JPEG')
             image_file.seek(0)
             payload = {
-                'rental_unit': rental_unit_one.id,
+                'rental_unit': self.rental_unit,
                 'image': image_file
             }
             res = self.client.post(url, payload, format='multipart')
@@ -97,9 +93,12 @@ class PhotoUploadTests(TestCase):
         self.assertTrue(os.path.exists(self.photo.image.path))
 
     def test_upload_image_bad_request(self):
-        url = photo_upload_url(self.rental_unit.id)
+        url = photo_upload_url(self.photo.id)
 
-        payload = {'image': 'notanimage'}
+        payload = {
+            'rental_unit': self.rental_unit.id,
+            'image': 'notanimage'
+        }
         res = self.client.post(url, payload, format='multipart')
             
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
