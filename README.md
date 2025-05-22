@@ -27,13 +27,13 @@ booking-app-api/
 ```bash
 git clone https://github.com/Francisco-Pages/booking-app-api.git
 cd booking-app-api
-
+```
 2. Run with Docker
 
 Make sure you have Docker and Docker Compose installed.
-
+```bash
 docker-compose up --build
-
+```
 3. Access the application
 
 Once the containers are running, you can access the Django development server at:
@@ -43,11 +43,11 @@ http://localhost:8000/
 Development
 
 To install dependencies for development:
-
+```bash
 pip install -r requirements.dev.txt
-
+```
 Use the Django CLI to run the server locally:
-
+```bash
 python manage.py runserver
 ```
 
