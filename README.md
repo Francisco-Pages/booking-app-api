@@ -11,7 +11,7 @@ A backend API built with Django for managing residential property bookings. This
 - Ready for testing and future expansion
 
 ## Project Structure
-
+```bash
 booking-app-api/
 ├── booking_app/          # Django project directory
 ├── Dockerfile            # Docker image definition
@@ -19,7 +19,7 @@ booking-app-api/
 ├── requirements.txt      # Production dependencies
 ├── requirements.dev.txt  # Development dependencies
 └── README.md             # You’re reading it!
-
+```
 ## Setup Instructions
 
 ### 1. Clone the repository
