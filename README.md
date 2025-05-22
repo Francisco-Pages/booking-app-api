@@ -49,6 +49,7 @@ pip install -r requirements.dev.txt
 Use the Django CLI to run the server locally:
 
 python manage.py runserver
+```
 
 TODO
 	•	Implement user authentication
